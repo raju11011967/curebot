@@ -1,3 +1,0 @@
-OPENROUTER_API_KEY=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
-OPENROUTER_MODEL=anthropic/Claude 3.7 Sonnet (thinking)
-OLLAMA_URL=http://localhost:11434
