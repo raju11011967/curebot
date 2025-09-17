@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -824,7 +825,8 @@
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
       }
-      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Strict";
+      // Use SameSite=Lax for better mobile compatibility
+      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
     }
     function getCookie(name) {
       const nameEQ = name + "=";
@@ -845,6 +847,8 @@
         const openrouterKey = openrouterKeyElement.value.trim();
         if (!openrouterKey) {
           addDebugLog('Warning: OpenRouter API key is empty');
+          alert('Please enter an OpenRouter API key.');
+          return;
         }
         const config = {
           provider: currentProvider,
@@ -861,14 +865,16 @@
         setCookie('curebotConfig', configString, 30);
         const savedCookie = getCookie('curebotConfig');
         if (savedCookie && JSON.parse(savedCookie).openrouter.key === openrouterKey) {
-          addDebugLog('Configuration saved successfully, including API key');
-          alert('Configuration saved successfully!');
+          // Update input field to reflect saved key
+          openrouterKeyElement.value = openrouterKey;
+          addDebugLog(`Configuration saved successfully, API key: ${openrouterKey.slice(0, 4)}...`);
+          alert('OpenRouter API key saved successfully!');
         } else {
           throw new Error('Failed to verify API key in saved cookie');
         }
       } catch (error) {
-        addDebugLog(`Failed to save configuration: ${error.message}`);
-        alert(`Error saving configuration: ${error.message}`);
+        addDebugLog(`Failed to save configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
+        alert(`Error saving API key: ${error.message}`);
       }
     }
     function loadConfig() {
@@ -880,37 +886,37 @@
             throw new Error('Invalid configuration format');
           }
           currentProvider = config.provider || 'openrouter';
-          const openrouterKeyElement = document.getElementById('openrouterKey');
-          if (openrouterKeyElement) {
-            openrouterKeyElement.value = config.openrouter?.key || '';
-          } else {
-            addDebugLog('Warning: OpenRouter API key input element not found during load');
-          }
-          document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
-          document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
-          document.querySelectorAll('.provider-tab').forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.provider === currentProvider);
-          });
-          document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
-          document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
-          if (config.selectedModel) {
-            const modelSelect = document.getElementById('modelSelect');
-            const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
-            if (optionExists) {
-              modelSelect.value = config.selectedModel;
+          // Retry mechanism for mobile DOM readiness
+          const setInputs = () => {
+            const openrouterKeyElement = document.getElementById('openrouterKey');
+            if (!openrouterKeyElement) {
+              addDebugLog('OpenRouter key input not ready, retrying...');
+              setTimeout(setInputs, 100);
+              return;
             }
-          }
-          addDebugLog('Configuration loaded from cookie');
-          if (config.openrouter?.key) {
-            addDebugLog('OpenRouter API key loaded successfully');
-          } else {
-            addDebugLog('No OpenRouter API key found in loaded configuration');
-          }
+            openrouterKeyElement.value = config.openrouter?.key || '';
+            document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
+            document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
+            document.querySelectorAll('.provider-tab').forEach(tab => {
+              tab.classList.toggle('active', tab.dataset.provider === currentProvider);
+            });
+            document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
+            document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+            if (config.selectedModel) {
+              const modelSelect = document.getElementById('modelSelect');
+              const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
+              if (optionExists) {
+                modelSelect.value = config.selectedModel;
+              }
+            }
+            addDebugLog(`Configuration loaded, API key: ${config.openrouter?.key ? config.openrouter.key.slice(0, 4) + '...' : 'none'} (Mobile: ${navigator.userAgent})`);
+          };
+          setTimeout(setInputs, 0); // Async to handle mobile DOM
         } else {
-          addDebugLog('No configuration found in cookies');
+          addDebugLog('No configuration found in cookies (Mobile: ' + navigator.userAgent + ')');
         }
       } catch (error) {
-        addDebugLog(`Failed to load configuration: ${error.message}`);
+        addDebugLog(`Failed to load configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
       }
     }
     async function testOllamaConnection() {
