@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Cure Health Bot</title>
   <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js" defer></script>
   <style>
@@ -23,8 +23,8 @@
       --error: #EF4444; /* Red for errors */
       --success: #22C55E; /* Green for success */
       --border: #D1D5DB; /* Light gray border */
-      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --gradient: linear-gradient(135deg, #3B82F6 0%, #EC4899 100%);
+      --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      --gradient: linear-gradient(135deg, #3B82F6, #EC4899);
       --dark-background: #1F2937; /* Dark mode background */
       --dark-text: #F9FAFB; /* Dark mode text */
     }
@@ -40,14 +40,14 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--gradient);
+      background: var(--background);
       min-height: 100vh;
       color: var(--text);
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 10px;
+      padding: 8px;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* Loading spinner */
@@ -67,8 +67,8 @@
       border: 4px solid rgba(255, 255, 255, 0.3);
       border-top: 4px solid var(--primary);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       animation: spin 1s linear infinite;
     }
     @keyframes spin {
@@ -78,13 +78,13 @@
 
     .container {
       width: 100%;
-      max-width: 1200px;
+      max-width: 600px;
       background: var(--background);
-      border-radius: 16px;
+      border-radius: 12px;
       box-shadow: var(--shadow);
       overflow: hidden;
       opacity: 0;
-      animation: fadeIn 0.5s ease-out forwards;
+      animation: fadeIn 0.3s ease-out forwards;
     }
 
     @keyframes fadeIn {
@@ -95,47 +95,48 @@
     header {
       background: var(--gradient);
       color: var(--dark-text);
-      padding: 20px;
+      padding: 12px;
       text-align: center;
     }
     header h1 {
-      font-size: clamp(20px, 5vw, 28px);
+      font-size: clamp(16px, 5vw, 20px);
       font-weight: 800;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     header p {
       margin: 0;
       opacity: 0.9;
-      font-size: clamp(12px, 3vw, 16px);
+      font-size: clamp(11px, 3vw, 13px);
     }
 
     .config-section {
       background: var(--dark-background);
-      padding: 15px;
+      padding: 10px;
       color: var(--dark-text);
     }
     .config-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 15px;
-      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 10px;
     }
     .config-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .config-group label {
       font-weight: 600;
-      font-size: 14px;
+      font-size: 12px;
     }
     .config-group input, .config-group select {
-      padding: 12px;
-      border-radius: 8px;
+      padding: 8px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.1);
       color: var(--dark-text);
-      font-size: 16px;
+      font-size: 13px;
+      width: 100%;
     }
     .config-group input::placeholder {
       color: rgba(255, 255, 255, 0.6);
@@ -143,19 +144,26 @@
     .provider-tabs {
       display: flex;
       gap: 0;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .provider-tabs::-webkit-scrollbar {
+      display: none;
     }
     .provider-tab {
-      padding: 12px 20px;
+      padding: 8px 12px;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--border);
       color: var(--dark-text);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       white-space: nowrap;
       touch-action: manipulation;
+      font-size: 12px;
+      min-width: 80px;
+      text-align: center;
     }
     .provider-tab.active {
       background: var(--primary);
@@ -164,24 +172,21 @@
     }
     #llmStatus {
       background: var(--gradient);
-      padding: 15px;
+      padding: 10px;
       color: var(--dark-text);
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 8px;
     }
     .status-info {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
-      flex: 1;
-      min-width: 200px;
+      flex-wrap: wrap;
     }
     .status-indicator {
-      width: 12px;
-      height: 12px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       flex-shrink: 0;
     }
@@ -202,37 +207,36 @@
     }
     .model-selector {
       display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 6px;
     }
     .model-selector label {
       font-weight: 600;
       opacity: 0.95;
-      white-space: nowrap;
+      font-size: 12px;
     }
     .model-selector select {
-      padding: 8px 12px;
-      border-radius: 12px;
+      padding: 6px 10px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: rgba(255, 255, 255, 0.12);
       color: var(--dark-text);
-      min-width: 150px;
-      font-size: 14px;
+      width: 100%;
+      font-size: 12px;
     }
     .model-selector option {
       background: var(--dark-background);
       color: var(--dark-text);
-      font-size: 13px;
+      font-size: 11px;
     }
     .debug-info {
       background: rgba(0, 0, 0, 0.08);
       color: var(--dark-text);
-      padding: 8px;
-      border-radius: 8px;
+      padding: 6px;
+      border-radius: 6px;
       font-family: monospace;
-      font-size: 12px;
-      max-height: 120px;
+      font-size: 10px;
+      max-height: 80px;
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-width: thin;
@@ -242,25 +246,26 @@
       word-break: break-all;
     }
     .debug-info::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
     .debug-info::-webkit-scrollbar-track {
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .debug-info::-webkit-scrollbar-thumb {
       background: var(--primary);
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .debug-toggle, .btn-small {
       padding: 6px 10px;
-      border-radius: 12px;
+      border-radius: 8px;
       background: var(--primary);
       color: var(--dark-text);
       border: 1px solid var(--border);
       cursor: pointer;
-      font-size: 13px;
+      font-size: 12px;
       touch-action: manipulation;
+      min-height: 44px;
     }
     .tabs {
       display: flex;
@@ -268,16 +273,20 @@
       gap: 0;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar {
+      display: none;
     }
     .tab {
-      padding: 15px 10px;
-      min-width: 100px;
+      padding: 10px 8px;
+      min-width: 70px;
       text-align: center;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       border-right: 1px solid var(--border);
-      transition: all 0.25s ease;
-      font-size: 12px;
+      transition: all 0.2s ease;
+      font-size: 11px;
       white-space: nowrap;
       touch-action: manipulation;
       color: var(--text);
@@ -297,28 +306,28 @@
     }
     .chat-controls {
       display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 15px;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
       background: linear-gradient(135deg, #E5E7EB, #D1D5DB);
-      align-items: center;
-      flex-wrap: wrap;
+      align-items: stretch;
     }
     .control-group {
       display: flex;
-      gap: 10px;
-      align-items: center;
+      gap: 8px;
+      justify-content: center;
     }
     .btn {
-      padding: 10px 16px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       background: var(--gradient);
       color: var(--dark-text);
-      font-weight: 700;
+      font-weight: 600;
       touch-action: manipulation;
-      font-size: 14px;
+      font-size: 12px;
+      min-height: 44px;
     }
     .btn-secondary {
       background: linear-gradient(135deg, #FECACA, #FCA5A5);
@@ -327,6 +336,7 @@
     .export-dropdown {
       position: relative;
       display: inline-block;
+      width: 100%;
     }
     .export-menu {
       display: none;
@@ -334,23 +344,24 @@
       top: 100%;
       right: 0;
       background: var(--background);
-      border-radius: 8px;
+      border-radius: 6px;
       box-shadow: var(--shadow);
       z-index: 1000;
-      min-width: 150px;
+      min-width: 120px;
       border: 1px solid var(--border);
     }
     .export-menu.show {
       display: block;
     }
     .export-option {
-      padding: 12px 16px;
+      padding: 10px 12px;
       cursor: pointer;
       transition: background 0.2s;
       border-bottom: 1px solid var(--border);
       font-weight: 600;
       color: var(--text);
       touch-action: manipulation;
+      font-size: 11px;
     }
     .export-option:hover {
       background: #E5E7EB;
@@ -358,110 +369,122 @@
     .export-option:last-child {
       border-bottom: none;
     }
+    .chat-section {
+      height: 45vh;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+    }
     .chatBox {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 20px;
+      padding: 12px;
       background: var(--background);
       scrollbar-width: thin;
       scrollbar-color: var(--primary) var(--background);
       -webkit-overflow-scrolling: touch;
     }
     .chatBox::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
     .chatBox::-webkit-scrollbar-track {
       background: var(--background);
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .chatBox::-webkit-scrollbar-thumb {
       background: var(--primary);
-      border-radius: 4px;
+      border-radius: 3px;
     }
     .message {
-      margin-bottom: 15px;
-      max-width: 85%;
-      animation: messageSlide 0.35s ease-out;
+      margin-bottom: 10px;
+      max-width: 90%;
+      animation: messageSlide 0.3s ease-out;
       word-wrap: break-word;
     }
     @keyframes messageSlide {
-      from { opacity: 0; transform: translateY(12px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: none; }
     }
     .user-message {
       margin-left: auto;
       background: var(--gradient);
       color: var(--dark-text);
-      padding: 12px 15px;
-      border-radius: 18px 18px 4px 18px;
-      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 12px 12px 4px 12px;
+      font-size: 12px;
     }
     .bot-message {
       margin-right: auto;
       background: var(--background);
-      padding: 12px 15px;
-      border-radius: 18px 18px 18px 4px;
-      border-left: 4px solid var(--primary);
+      padding: 10px 12px;
+      border-radius: 12px 12px 12px 4px;
+      border-left: 3px solid var(--primary);
       box-shadow: var(--shadow);
-      font-size: 14px;
-      line-height: 1.5;
+      font-size: 12px;
+      line-height: 1.4;
       color: var(--text);
     }
     .input-container {
       display: flex;
-      gap: 10px;
-      padding: 15px;
+      gap: 8px;
+      padding: 10px;
       background: var(--background);
       align-items: center;
     }
     .chatInput {
       flex: 1;
-      padding: 14px 15px;
-      border-radius: 20px;
-      border: 2px solid var(--border);
-      font-size: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 13px;
       outline: none;
       background: #F3F4F6;
       color: var(--text);
+      min-height: 44px;
     }
     .chatInput:focus {
-      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
       border-color: var(--primary);
       background: var(--background);
     }
     .sendBtn {
-      padding: 14px 20px;
-      border-radius: 20px;
-      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 600;
       border: none;
       cursor: pointer;
       background: var(--gradient);
       color: var(--dark-text);
       touch-action: manipulation;
-      font-size: 14px;
+      font-size: 12px;
+      min-height: 44px;
     }
     .quick-questions {
-      padding: 15px;
+      padding: 10px;
       background: linear-gradient(135deg, #93C5FD, #FCA5A5);
     }
     .questions-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
+      gap: 8px;
     }
     .quick-question {
       background: var(--background);
-      padding: 15px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 8px;
       cursor: pointer;
       box-shadow: var(--shadow);
       font-weight: 600;
       text-align: center;
       transition: transform 0.2s ease, opacity 0.2s ease;
       touch-action: manipulation;
-      font-size: 14px;
+      font-size: 12px;
       color: var(--text);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .quick-question:hover {
       transform: translateY(-2px);
@@ -471,12 +494,12 @@
       cursor: not-allowed;
     }
     .disclaimer {
-      padding: 15px;
-      margin: 15px;
-      border-radius: 12px;
-      font-size: 14px;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      font-size: 11px;
       background: linear-gradient(135deg, #FEE2E2, #FECACA);
-      border-left: 4px solid var(--error);
+      border-left: 3px solid var(--error);
       color: var(--text);
     }
     .thinking {
@@ -486,41 +509,39 @@
     .error-message {
       background: #FEE2E2;
       color: var(--error);
-      padding: 12px 15px;
-      border-radius: 18px 18px 18px 4px;
-      border-left: 4px solid var(--error);
-      margin-bottom: 15px;
-      max-width: 85%;
-      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 12px 12px 12px 4px;
+      border-left: 3px solid var(--error);
+      margin-bottom: 10px;
+      max-width: 90%;
+      font-size: 12px;
     }
     @media (max-width: 768px) {
       body { padding: 5px; }
-      .container { border-radius: 12px; }
-      header { padding: 15px; }
-      .config-section { padding: 10px; }
-      .chat-section { height: 50vh; min-height: 350px; }
-      .chatBox { padding: 15px; }
-      .input-container { padding: 10px; gap: 8px; }
-      .quick-questions { padding: 10px; }
-      .questions-grid { grid-template-columns: 1fr; gap: 8px; }
-      .tab { padding: 12px 8px; font-size: 11px; min-width: 80px; }
-      .model-selector { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .model-selector select { min-width: 100%; }
-      #llmStatus { flex-direction: column; align-items: flex-start; }
-      .status-info { min-width: 100%; }
-      .chat-controls { flex-direction: column; gap: 8px; }
-      .control-group { width: 100%; justify-content: center; }
+      .container { max-width: 100%; border-radius: 8px; }
+      header { padding: 10px; }
+      .config-section { padding: 8px; }
+      .chat-section { height: 45vh; min-height: 200px; }
+      .chatBox { padding: 10px; }
+      .input-container { padding: 8px; gap: 6px; }
+      .quick-questions { padding: 8px; }
+      .questions-grid { gap: 6px; }
+      .tab { padding: 8px 6px; font-size: 10px; min-width: 60px; }
+      .model-selector select { font-size: 12px; }
+      #llmStatus { padding: 8px; }
+      .status-info { gap: 6px; }
+      .chat-controls { padding: 8px; }
+      .control-group { flex-direction: column; gap: 6px; }
       .message { max-width: 95%; }
+      .btn, .sendBtn, .quick-question { min-height: 48px; }
     }
     @media (max-width: 480px) {
-      .chat-section { height: 45vh; min-height: 300px; }
-      .quick-question { padding: 12px; font-size: 13px; }
-      .btn, .sendBtn { padding: 12px 16px; font-size: 13px; }
-      .chatInput { padding: 12px; }
-    }
-    @media (min-width: 769px) {
-      .config-grid { grid-template-columns: 1fr 1fr; }
-      .questions-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .chat-section { height: 40vh; min-height: 180px; }
+      .quick-question { padding: 8px; font-size: 11px; }
+      .btn, .sendBtn { padding: 8px 12px; font-size: 11px; }
+      .chatInput { padding: 8px; font-size: 12px; }
+      header h1 { font-size: 18px; }
+      header p { font-size: 12px; }
     }
   </style>
 </head>
@@ -558,14 +579,14 @@
           </div>
           <div class="config-group">
             <label>Connection Status</label>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <span id="ollamaStatus">Not connected</span>
               <button class="btn-small" id="testOllamaBtn">Test Connection</button>
             </div>
           </div>
         </div>
       </div>
-      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
         <button class="btn-small" id="loadModelsBtn">Load Models</button>
         <button class="btn-small" id="saveConfigBtn">Save Config</button>
       </div>
@@ -574,8 +595,8 @@
       <div class="status-info">
         <span id="statusIndicator" class="status-indicator status-disconnected"></span>
         <div>
-          <div id="statusText" style="font-weight: 700;">Not Connected</div>
-          <div style="font-size: 12px; opacity: 0.95;" id="statusSub">Configure your API settings</div>
+          <div id="statusText" style="font-weight: 600;">Not Connected</div>
+          <div style="font-size: 11px; opacity: 0.95;" id="statusSub">Configure your API settings</div>
         </div>
         <button class="debug-toggle" id="debugToggleBtn">Debug Info</button>
       </div>
@@ -624,7 +645,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Quick Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Quick Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about common cold symptoms">What are common cold symptoms?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to boost immune system naturally">How to boost immune system naturally?</div>
@@ -657,7 +678,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Diabetes Care Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Diabetes Care Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask what foods diabetics should avoid">What foods should diabetics avoid?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to monitor blood sugar properly">How to monitor blood sugar properly?</div>
@@ -690,7 +711,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Heart Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Heart Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about normal blood pressure range">What is normal blood pressure range?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to control cholesterol naturally">How to control cholesterol naturally?</div>
@@ -723,7 +744,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Mental Wellness Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Mental Wellness Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to manage stress effectively">How to manage stress effectively?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about tips for better sleep hygiene">Tips for better sleep hygiene</div>
@@ -756,7 +777,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Respiratory Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Respiratory Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to improve lung capacity naturally">How to improve lung capacity naturally?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about signs of asthma">What are signs of asthma?</div>
@@ -789,7 +810,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Women's Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Women's Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about common signs of hormonal imbalance">What are common signs of hormonal imbalance?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to maintain reproductive health">How to maintain reproductive health?</div>
@@ -822,7 +843,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Elderly Care Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Elderly Care Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to prevent falls in elderly">How to prevent falls in elderly?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about managing multiple medications safely">Managing multiple medications safely</div>
@@ -855,7 +876,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 14px;">Pediatric Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 10px; font-size: 13px;">Pediatric Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about vaccination schedule for children">Vaccination schedule for children</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about managing childhood obesity">Managing childhood obesity</div>
@@ -881,7 +902,7 @@
       const debugLog = document.getElementById('debugLog');
       if (debugLog) {
         const timestamp = new Date().toLocaleTimeString();
-        debugLog.innerHTML += `[${timestamp}] ${message}\n`;
+        debugLog.innerHTML += `[${timestamp}] ${message}<br>`;
         debugLog.scrollTop = debugLog.scrollHeight;
       }
     }
@@ -905,15 +926,14 @@
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
       }
-      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
+      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Strict";
     }
 
     function getCookie(name) {
       const nameEQ = name + "=";
       const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1);
+      for (let c of ca) {
+        c = c.trim();
         if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length));
       }
       return null;
@@ -923,7 +943,7 @@
       try {
         const openrouterKeyElement = document.getElementById('openrouterKey');
         if (!openrouterKeyElement) {
-          throw new Error('OpenRouter API key input element not found');
+          throw new Error('OpenRouter API key input not found');
         }
         const openrouterKey = openrouterKeyElement.value.trim();
         if (!openrouterKey) {
@@ -942,67 +962,64 @@
           },
           selectedModel: document.getElementById('modelSelect').value || ''
         };
-        const configString = JSON.stringify(config);
-        setCookie('curebotConfig', configString, 30);
-        const savedCookie = getCookie('curebotConfig');
-        if (savedCookie && JSON.parse(savedCookie).openrouter.key === openrouterKey) {
-          openrouterKeyElement.value = openrouterKey;
-          addDebugLog(`Configuration saved successfully, API key: ${openrouterKey.slice(0, 4)}...`);
-          alert('OpenRouter API key saved successfully!');
-        } else {
-          throw new Error('Failed to verify API key in saved cookie');
-        }
+        setCookie('curebotConfig', JSON.stringify(config), 30);
+        addDebugLog(`Configuration saved: API key (${openrouterKey.slice(0, 4)}...)`);
+        alert('Configuration saved successfully!');
       } catch (error) {
-        addDebugLog(`Failed to save configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
-        alert(`Error saving API key: ${error.message}`);
+        addDebugLog(`Failed to save configuration: ${error.message} (UA: ${navigator.userAgent})`);
+        alert(`Error saving configuration: ${error.message}`);
       }
     }
 
     function loadConfig() {
       try {
         const saved = getCookie('curebotConfig');
-        if (saved) {
-          const config = JSON.parse(saved);
-          if (!config || typeof config !== 'object') {
-            throw new Error('Invalid configuration format');
-          }
-          currentProvider = config.provider || 'openrouter';
-          let retries = 0;
-          const maxRetries = 5;
-          const setInputs = () => {
-            const openrouterKeyElement = document.getElementById('openrouterKey');
-            if (!openrouterKeyElement && retries < maxRetries) {
-              addDebugLog('OpenRouter key input not ready, retrying...');
-              retries++;
-              setTimeout(setInputs, 100);
-              return;
-            }
-            if (!openrouterKeyElement) {
-              throw new Error('OpenRouter key input not found after retries');
-            }
-            openrouterKeyElement.value = config.openrouter?.key || '';
-            document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
-            document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
-            document.querySelectorAll('.provider-tab').forEach(tab => {
-              tab.classList.toggle('active', tab.dataset.provider === currentProvider);
-            });
-            document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
-            document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
-            if (config.selectedModel) {
-              const modelSelect = document.getElementById('modelSelect');
-              const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
-              if (optionExists) {
-                modelSelect.value = config.selectedModel;
-              }
-            }
-            addDebugLog(`Configuration loaded, API key: ${config.openrouter?.key ? config.openrouter.key.slice(0, 4) + '...' : 'none'} (Mobile: ${navigator.userAgent})`);
-          };
-          setTimeout(setInputs, 0);
-        } else {
-          addDebugLog('No configuration found in cookies (Mobile: ' + navigator.userAgent + ')');
+        if (!saved) {
+          addDebugLog('No configuration found in cookies (UA: ' + navigator.userAgent + ')');
+          return;
         }
+        const config = JSON.parse(saved);
+        if (!config || typeof config !== 'object') {
+          throw new Error('Invalid configuration format');
+        }
+        currentProvider = config.provider || 'openrouter';
+        let retries = 0;
+        const maxRetries = 5;
+        const setInputs = () => {
+          const openrouterKeyElement = document.getElementById('openrouterKey');
+          if (!openrouterKeyElement && retries < maxRetries) {
+            addDebugLog(`OpenRouter key input not ready, retry ${retries + 1}/${maxRetries}`);
+            retries++;
+            setTimeout(setInputs, 100);
+            return;
+          }
+          if (!openrouterKeyElement) {
+            throw new Error('OpenRouter key input not found after retries');
+          }
+          openrouterKeyElement.value = config.openrouter?.key || '';
+          document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
+          document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
+          document.querySelectorAll('.provider-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.provider === currentProvider);
+          });
+          document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
+          document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+          if (config.selectedModel) {
+            const modelSelect = document.getElementById('modelSelect');
+            const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
+            if (optionExists) {
+              modelSelect.value = config.selectedModel;
+            }
+          }
+          addDebugLog(`Configuration loaded: API key (${config.openrouter?.key ? config.openrouter.key.slice(0, 4) + '...' : 'none'})`);
+          if (config.openrouter?.key) {
+            updateConnectionStatus('connected', 'Configuration Loaded', 'API key retrieved');
+          }
+        };
+        setInputs();
       } catch (error) {
-        addDebugLog(`Failed to load configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
+        addDebugLog(`Failed to load configuration: ${error.message} (UA: ${navigator.userAgent})`);
+        updateConnectionStatus('disconnected', 'Config Load Failed', error.message);
       }
     }
 
@@ -1028,7 +1045,7 @@
           updateConnectionStatus('connected', 'Ollama Connected', 'Ready to chat');
           return true;
         } else {
-          throw new Error(`Server responded with status: ${response.status} ${response.statusText}`);
+          throw new Error(`Server responded with status: ${response.status}`);
         }
       } catch (error) {
         clearTimeout(timeoutId);
@@ -1038,7 +1055,7 @@
         if (error.name === 'AbortError') {
           errorMessage = 'Connection timed out after 5 seconds';
         } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Unable to reach Ollama server. Ensure it is running and accessible at ' + url;
+          errorMessage = 'Unable to reach Ollama server.';
         }
         addDebugLog(`Ollama connection failed: ${errorMessage}`);
         updateConnectionStatus('disconnected', 'Connection Failed', errorMessage);
@@ -1282,7 +1299,7 @@
         if (typeof jspdf !== 'undefined') {
           const { jsPDF } = jspdf;
           const doc = new jsPDF();
-          doc.setFontSize(12);
+          doc.setFontSize(10);
           doc.text(content, 10, 10);
           doc.save(`curebot-${tabName}-chat.pdf`);
         } else {
@@ -1302,7 +1319,7 @@
         }
       }, 500); // Hide spinner after 500ms
 
-      loadConfig();
+      loadConfig(); // Load API key and config immediately
       document.querySelectorAll('.provider-tab').forEach(tab => {
         tab.addEventListener('click', function() {
           currentProvider = this.dataset.provider;
@@ -1315,6 +1332,11 @@
           if (modelSelect) {
             modelSelect.innerHTML = '<option value="">Configure provider first</option>';
           }
+          addDebugLog(`Switched to provider: ${currentProvider}`);
+        });
+        tab.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          this.click();
         });
       });
       document.querySelectorAll('.tab').forEach(tab => {
@@ -1327,23 +1349,44 @@
           if (targetContent) {
             targetContent.classList.add('active');
           }
+          addDebugLog(`Switched to tab: ${targetTab}`);
+        });
+        tab.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          this.click();
         });
       });
       const testOllamaBtn = document.getElementById('testOllamaBtn');
       if (testOllamaBtn) {
         testOllamaBtn.addEventListener('click', testOllamaConnection);
+        testOllamaBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          testOllamaConnection();
+        });
       }
       const loadModelsBtn = document.getElementById('loadModelsBtn');
       if (loadModelsBtn) {
         loadModelsBtn.addEventListener('click', loadModels);
+        loadModelsBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          loadModels();
+        });
       }
       const saveConfigBtn = document.getElementById('saveConfigBtn');
       if (saveConfigBtn) {
         saveConfigBtn.addEventListener('click', saveConfig);
+        saveConfigBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          saveConfig();
+        });
       }
       const refreshModelsBtn = document.getElementById('refreshModelsBtn');
       if (refreshModelsBtn) {
         refreshModelsBtn.addEventListener('click', loadModels);
+        refreshModelsBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          loadModels();
+        });
       }
       const debugToggleBtn = document.getElementById('debugToggleBtn');
       if (debugToggleBtn) {
@@ -1351,7 +1394,12 @@
           const debugInfo = document.getElementById('debugInfo');
           if (debugInfo) {
             debugInfo.style.display = debugInfo.style.display === 'block' ? 'none' : 'block';
+            addDebugLog(`Debug info ${debugInfo.style.display === 'block' ? 'shown' : 'hidden'}`);
           }
+        });
+        debugToggleBtn.addEventListener('touchstart', function(e) {
+          e.preventDefault();
+          this.click();
         });
       }
       tabs.forEach(tab => {
@@ -1360,6 +1408,10 @@
         const clearBtn = document.getElementById(`clearChatBtn${tab.charAt(0).toUpperCase()}`);
         if (sendBtn && input) {
           sendBtn.addEventListener('click', () => sendMessage(tab, input.value));
+          sendBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            sendMessage(tab, input.value);
+          });
           input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -1369,10 +1421,15 @@
         }
         if (clearBtn) {
           clearBtn.addEventListener('click', () => clearChat(tab));
+          clearBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            clearChat(tab);
+          });
         }
         const quickQuestions = document.querySelectorAll(`#${tab} .quick-question`);
         quickQuestions.forEach(question => {
-          question.addEventListener('click', function() {
+          const handleQuickQuestion = function(e) {
+            e.preventDefault();
             if (isStreaming) return;
             question.setAttribute('aria-disabled', 'true');
             question.style.opacity = '0.6';
@@ -1383,20 +1440,13 @@
                 question.style.opacity = '1';
               });
             }
-          });
+          };
+          question.addEventListener('click', handleQuickQuestion);
+          question.addEventListener('touchstart', handleQuickQuestion);
           question.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              if (isStreaming) return;
-              question.setAttribute('aria-disabled', 'true');
-              question.style.opacity = '0.6';
-              if (input) {
-                input.value = this.textContent;
-                sendMessage(tab, this.textContent).finally(() => {
-                  question.setAttribute('aria-disabled', 'false');
-                  question.style.opacity = '1';
-                });
-              }
+              handleQuickQuestion.call(this, e);
             }
           });
         });
@@ -1407,8 +1457,20 @@
             e.stopPropagation();
             exportMenu.classList.toggle('show');
           });
+          exportBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            exportMenu.classList.toggle('show');
+          });
           exportMenu.addEventListener('click', function(e) {
             if (e.target.classList.contains('export-option')) {
+              const format = e.target.dataset.format;
+              exportChat(tab, format);
+              exportMenu.classList.remove('show');
+            }
+          });
+          exportMenu.addEventListener('touchstart', function(e) {
+            if (e.target.classList.contains('export-option')) {
+              e.preventDefault();
               const format = e.target.dataset.format;
               exportChat(tab, format);
               exportMenu.classList.remove('show');
@@ -1421,7 +1483,14 @@
           menu.classList.remove('show');
         });
       });
-      addDebugLog('CureBot initialized successfully');
+      document.addEventListener('touchstart', function(e) {
+        if (!e.target.closest('.export-dropdown')) {
+          document.querySelectorAll('.export-menu').forEach(menu => {
+            menu.classList.remove('show');
+          });
+        }
+      });
+      addDebugLog('CureBot initialized successfully (UA: ' + navigator.userAgent + ')');
     });
   </script>
 </body>
