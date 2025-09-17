@@ -926,8 +926,11 @@
       const debugLog = document.getElementById('debugLog');
       if (debugLog) {
         const timestamp = new Date().toLocaleTimeString();
-        debugLog.innerHTML += `[${timestamp}] ${message}<br>`;
+        const protocol = window.location.protocol;
+        const userAgent = navigator.userAgent;
+        debugLog.innerHTML += `[${timestamp}] ${message} (Protocol: ${protocol}, UA: ${userAgent})<br>`;
         debugLog.scrollTop = debugLog.scrollHeight;
+        console.log(`[CureBot Debug] ${message} (Protocol: ${protocol}, UA: ${userAgent})`);
       }
     }
 
@@ -950,9 +953,9 @@
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
       }
-      const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-      document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=Lax${secure}`;
-      addDebugLog(`Cookie set: ${name} (Secure: ${secure ? 'yes' : 'no'})`);
+      document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=Lax`;
+      localStorage.setItem(name, value); // Fallback for mobile browsers
+      addDebugLog(`Cookie and localStorage set: ${name}`);
     }
 
     function getCookie(name) {
@@ -961,6 +964,12 @@
       for (let c of ca) {
         c = c.trim();
         if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length));
+      }
+      // Fallback to localStorage
+      const localValue = localStorage.getItem(name);
+      if (localValue) {
+        addDebugLog(`Cookie not found, using localStorage for ${name}`);
+        return localValue;
       }
       return null;
     }
@@ -974,7 +983,7 @@
         const openrouterKey = openrouterKeyElement.value.trim();
         if (!openrouterKey) {
           addDebugLog('Warning: OpenRouter API key is empty');
-          alert('Please enter an OpenRouter API key.');
+          alert('Please enter an OpenRouter API key. Get one at https://openrouter.ai/keys');
           return;
         }
         const config = {
@@ -988,12 +997,12 @@
           },
           selectedModel: document.getElementById('modelSelect').value || ''
         };
-        setCookie('curebotConfig', JSON.stringify(config), 30);
+        setCookie('curebotConfig', JSON.stringify(config), 90);
         addDebugLog(`Configuration saved: API key (${openrouterKey.slice(0, 4)}...)`);
-        alert('Configuration saved successfully!');
+        alert('Configuration saved successfully! Reload the page to verify.');
       } catch (error) {
-        addDebugLog(`Failed to save configuration: ${error.message} (UA: ${navigator.userAgent})`);
-        alert(`Error saving configuration: ${error.message}`);
+        addDebugLog(`Failed to save configuration: ${error.message}`);
+        alert(`Error saving configuration: ${error.message}. Check Debug Info for details.`);
       }
     }
 
@@ -1001,9 +1010,9 @@
       try {
         const saved = getCookie('curebotConfig');
         if (!saved) {
-          addDebugLog('No configuration found in cookies (UA: ' + navigator.userAgent + ')');
+          addDebugLog('No configuration found in cookies or localStorage');
           updateConnectionStatus('disconnected', 'No Config Found', 'Please enter and save API settings');
-          alert('No saved API key found. Please enter and save your OpenRouter API key.');
+          alert('No saved API key found. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Enable Debug Info to troubleshoot.');
           return;
         }
         const config = JSON.parse(saved);
@@ -1012,13 +1021,13 @@
         }
         currentProvider = config.provider || 'openrouter';
         let retries = 0;
-        const maxRetries = 10;
+        const maxRetries = 15;
         const setInputs = () => {
           const openrouterKeyElement = document.getElementById('openrouterKey');
           if (!openrouterKeyElement && retries < maxRetries) {
-            addDebugLog(`OpenRouter key input not ready, retry ${retries + 1}/${maxRetries} (UA: ${navigator.userAgent})`);
+            addDebugLog(`OpenRouter key input not ready, retry ${retries + 1}/${maxRetries}`);
             retries++;
-            setTimeout(setInputs, 100);
+            setTimeout(setInputs, 200);
             return;
           }
           if (!openrouterKeyElement) {
@@ -1044,14 +1053,14 @@
             updateConnectionStatus('connected', 'Configuration Loaded', 'API key retrieved');
           } else {
             updateConnectionStatus('disconnected', 'No API Key', 'Please enter and save an API key');
-            alert('No saved API key found. Please enter and save your OpenRouter API key.');
+            alert('No saved API key found. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Enable Debug Info to troubleshoot.');
           }
         };
         setInputs();
       } catch (error) {
-        addDebugLog(`Failed to load configuration: ${error.message} (UA: ${navigator.userAgent})`);
+        addDebugLog(`Failed to load configuration: ${error.message}`);
         updateConnectionStatus('disconnected', 'Config Load Failed', error.message);
-        alert(`Failed to load API key: ${error.message}. Please enter and save your OpenRouter API key.`);
+        alert(`Failed to load API key: ${error.message}. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Check Debug Info for details.`);
       }
     }
 
@@ -1522,7 +1531,7 @@
           });
         }
       });
-      addDebugLog('CureBot initialized successfully (UA: ' + navigator.userAgent + ')');
+      addDebugLog('CureBot initialized successfully');
     });
   </script>
 </body>
