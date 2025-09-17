@@ -1,3 +1,237 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cure Health Bot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      color: #111827;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg, #2d6cdf 0%, #6b46c1 100%);
+      color: white;
+      padding: 28px;
+      text-align: center;
+    }
+    header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    header p { margin: 0; opacity: 0.95; }
+    .config-section {
+      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+      padding: 20px;
+      color: white;
+    }
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+    .config-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .config-group label { font-weight: 600; font-size: 14px; }
+    .config-group input, .config-group select {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .config-group input::placeholder { color: rgba(255,255,255,0.6); }
+    .provider-tabs { display: flex; gap: 0; margin-bottom: 15px; }
+    .provider-tab {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .provider-tab.active { background: rgba(255,255,255,0.2); border-bottom: 2px solid #4facfe; }
+    #llmStatus {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      padding: 18px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-info { display: flex; gap: 12px; align-items: center; }
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; }
+    .status-loading { background: #ff9800; box-shadow: 0 0 8px rgba(255,152,0,0.6); animation: pulse 1.5s infinite; }
+    .status-connected { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); }
+    .status-disconnected { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    .model-selector { display: flex; gap: 10px; align-items: center; }
+    .model-selector label { font-weight: 600; opacity: 0.95; }
+    .model-selector select {
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      color: white;
+      min-width: 220px;
+    }
+    .model-selector option { background: #374151; color: white; font-size: 13px; }
+    .debug-info {
+      background: rgba(0,0,0,0.08);
+      color: white;
+      padding: 8px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 150px;
+      overflow-y: scroll;
+      scrollbar-width: thin;
+      scrollbar-color: #4facfe rgba(255,255,255,0.1);
+      width: 100%;
+      display: none;
+    }
+    .debug-info::-webkit-scrollbar {
+      width: 8px;
+    }
+    .debug-info::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    .debug-info::-webkit-scrollbar-thumb {
+      background: #4facfe;
+      border-radius: 4px;
+    }
+    .debug-toggle, .btn-small {
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.18);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tabs {
+      display: flex;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      gap: 0;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 18px 12px;
+      min-width: 120px;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      border-right: 1px solid rgba(255,255,255,0.5);
+      transition: all 0.25s ease;
+      font-size: 13px;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.12));
+      color: #2d6cdf;
+      transform: translateY(-4px);
+    }
+    .tab-content { display: none; padding: 0; background: #fff; }
+    .tab-content.active { display: block; }
+    .chat-section {
+      display: flex;
+      flex-direction: column;
+      min-height: 620px;
+      max-height: 620px;
+      overflow: hidden;
+    }
+    .chat-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px;
+      background: linear-gradient(135deg, #fff7ed, #ffedd5);
+      align-items: center;
+    }
+    .control-group { display: flex; gap: 10px; align-items: center; }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 700;
+    }
+    .btn-secondary { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #111827; }
+    .export-dropdown { position: relative; display: inline-block; }
+    .export-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      z-index: 1000;
+      min-width: 150px;
+      border: 1px solid #e5e7eb;
+    }
+    .export-menu.show { display: block; }
+    .export-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid #f3f4f6;
+      font-weight: 600;
+      color: #374151;
+    }
+    .export-option:hover { background: #f8fafc; }
+    .export-option:last-child { border-bottom: none; }
+    .chatBox {
+      flex: 1;
+      overflow-y: scroll;
+      padding: 26px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      max-height: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: #667eea #f5f7fa;
+    }
+    .chatBox::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chatBoxぶ
+
+System: It looks like your HTML code is incomplete, as it cuts off in the JavaScript section at the `DOMContentLoaded` event listener. Since you requested the complete HTML code without comments, I’ll provide the full code with the JavaScript section completed, removing all JavaScript comments while keeping the existing HTML, CSS, and JavaScript unchanged up to the point of truncation. The completion will close the `DOMContentLoaded` event listener and add necessary initialization logic to ensure the "Cure Health Bot" application functions correctly.
+
+### Completion Details
+- **Preserving Existing Code**: All HTML, CSS, and JavaScript up to the line `const initialTab =` remain unchanged, except for removing all JavaScript comments (e.g., `// Cookie management functions`, `// Global state`, etc.).
+- **JavaScript Completion**: The `DOMContentLoaded` event listener is completed by:
+  - Removing the incomplete `const initialTab =` line, as `currentTab` is already defined as `'general'` in the global state.
+  - Adding calls to `setupEventListeners()` to enable interactivity, `loadModels()` to populate the AI model selector, and `scrollChat(currentTab)` to initialize the default tab’s chat box.
+  - Adding `logDebug('Application initialized')` for consistency with the app’s debugging approach.
+- **Comment Removal**: All single-line (`//`) and block (`/* */`) comments in the JavaScript are removed, keeping all functional code intact.
+- **Artifact**: The complete HTML is wrapped in an `<xaiArtifact>` tag with a new UUID, as this is a new submission, and `contentType` is set to `text/html`.
+
+### Complete HTML Code (Without Comments)
+
+<xaiArtifact artifact_id="68ed2991-04ca-49a3-9cbf-029af2ba155e" artifact_version_id="0a9e6750-747c-4fe6-8d57-9502e8325d81" title="index.html" contentType="text/html">
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -397,7 +631,6 @@
       <div class="tab" data-tab="pediatric">Pediatric Health</div>
     </div>
 
-    <!-- General Health Tab -->
     <div id="general" class="tab-content active">
       <div class="chat-controls">
         <div class="control-group">
@@ -432,7 +665,6 @@
       </div>
     </div>
 
-    <!-- Diabetes Tab -->
     <div id="diabetes" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -467,7 +699,6 @@
       </div>
     </div>
 
-    <!-- Heart Health Tab -->
     <div id="heart" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -502,7 +733,6 @@
       </div>
     </div>
 
-    <!-- Mental Wellness Tab -->
     <div id="mental" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -537,7 +767,6 @@
       </div>
     </div>
 
-    <!-- Respiratory Health Tab -->
     <div id="respiratory" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -572,7 +801,6 @@
       </div>
     </div>
 
-    <!-- Women's Health Tab -->
     <div id="women" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -607,7 +835,6 @@
       </div>
     </div>
 
-    <!-- Elderly Care Tab -->
     <div id="elderly" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -630,3 +857,671 @@
           <input class="chatInput" id="elderlyInput" placeholder="Ask about elderly care..." maxlength="1000">
           <button class="sendBtn" id="elderlySend">Send</button>
         </div>
+      </div>
+      <div class="quick-questions">
+        <h3 style="text-align: center; margin-bottom: 14px;">Elderly Care Questions</h3>
+        <div class="questions-grid">
+          <div class="quick-question">How to prevent falls in elderly?</div>
+          <div class="quick-question">Memory exercises for seniors</div>
+          <div class="quick-question">Nutrition needs for older adults</div>
+          <div class="quick-question">Managing arthritis pain naturally</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pediatric" class="tab-content">
+      <div class="chat-controls">
+        <div class="control-group">
+          <button class="btn btn-secondary" id="clearChatBtnP">Clear Chat</button>
+        </div>
+        <div class="control-group">
+          <div class="export-dropdown">
+            <button class="btn btn-secondary" id="exportBtnP">Export Chat ▼</button>
+            <div class="export-menu" id="exportMenuP">
+              <div class="export-option" data-format="pdf" data-tab="pediatric">📄 Export as PDF</div>
+              <div class="export-option" data-format="word" data-tab="pediatric">📝 Export as Word</div>
+              <div class="export-option" data-format="txt" data-tab="pediatric">📋 Export as Text</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-section">
+        <div class="chatBox" id="pediatricChatBox" aria-live="polite"></div>
+        <div class="input-container">
+          <input class="chatInput" id="pediatricInput" placeholder="Ask about children's health..." maxlength="1000">
+          <button class="sendBtn" id="pediatricSend">Send</button>
+        </div>
+      </div>
+      <div class="quick-questions">
+        <h3 style="text-align: center; margin-bottom: 14px;">Pediatric Health Questions</h3>
+        <div class="questions-grid">
+          <div class="quick-question">What are normal growth milestones for children?</div>
+          <div class="quick-question">How to boost child immunity naturally?</div>
+          <div class="quick-question">Healthy eating habits for kids</div>
+          <div class="quick-question">When should I be concerned about fever?</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ <strong>Disclaimer:</strong> This AI provides general health information only. Consult a doctor for medical advice.
+    </div>
+
+    <div class="general-conditions">
+      <h3>General Conditions</h3>
+      <ul>
+        <li><strong>Usage Terms:</strong> Use this bot for informational purposes only. Always verify information with a healthcare professional.</li>
+        <li><strong>Privacy Notice:</strong> Conversations are stored locally and not shared. Ensure your API keys are kept secure.</li>
+        <li><strong>Limitations:</strong> The AI may not cover all health scenarios or provide real-time medical diagnostics.</li>
+        <li><strong>Contact:</strong> For support, reach out to support@curehealthbot.com (example).</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    function setCookie(name, value, days = 30) {
+      const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+    }
+
+    function getCookie(name) {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.trim().split('=');
+        if (cookieName === name) {
+          return decodeURIComponent(cookieValue);
+        }
+      }
+      return null;
+    }
+
+    function deleteCookie(name) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
+    }
+
+    const config = {
+      openrouter: { apiKey: '', url: 'https://openrouter.ai/api/v1/chat/completions' },
+      ollama: { url: 'http://localhost:11434/api/chat' }
+    };
+    const conversations = {
+      general: [], diabetes: [], heart: [], mental: [],
+      respiratory: [], women: [], elderly: [], pediatric: []
+    };
+    let currentProvider = 'openrouter';
+    let currentTab = 'general';
+    let currentModel = '';
+    let availableModels = [];
+
+    const tabs = ['general', 'diabetes', 'heart', 'mental', 'respiratory', 'women', 'elderly', 'pediatric'];
+    const clearButtonMappings = {
+      general: 'clearChatBtn', diabetes: 'clearChatBtnD', heart: 'clearChatBtnH',
+      mental: 'clearChatBtnM', respiratory: 'clearChatBtnR', women: 'clearChatBtnW',
+      elderly: 'clearChatBtnE', pediatric: 'clearChatBtnP'
+    };
+
+    function logDebug(msg) {
+      console.log(`[Debug] ${msg}`);
+      const log = document.getElementById('debugLog');
+      if (log) {
+        const timestamp = new Date().toLocaleTimeString();
+        log.innerHTML += `<div>[${timestamp}] ${msg}</div>`;
+        log.scrollTop = log.scrollHeight;
+      }
+    }
+
+    function updateStatus(state, text, sub = '') {
+      const ind = document.getElementById('statusIndicator');
+      const st = document.getElementById('statusText');
+      const ss = document.getElementById('statusSub');
+      if (ind && st && ss) {
+        ind.className = `status-indicator status-${state}`;
+        st.textContent = text;
+        ss.textContent = sub;
+      }
+      logDebug(`Status: ${text} (${state})`);
+    }
+
+    function isValidUrl(url) {
+      try { new URL(url); return true; } catch { return false; }
+    }
+
+    function scrollChat(tab) {
+      const box = document.getElementById(`${tab}ChatBox`);
+      if (box) box.scrollTop = box.scrollHeight;
+    }
+
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    function loadConfig() {
+      const openrouterKey = getCookie('healthbot_openrouter_key');
+      const openrouterUrl = getCookie('healthbot_openrouter_url');
+      const ollamaUrl = getCookie('healthbot_ollama_url');
+      const savedProvider = getCookie('healthbot_provider');
+      const savedModel = getCookie('healthbot_model');
+
+      if (openrouterKey) {
+        config.openrouter.apiKey = openrouterKey;
+        document.getElementById('openrouterKey').value = openrouterKey;
+      }
+      if (openrouterUrl) {
+        config.openrouter.url = openrouterUrl;
+        document.getElementById('openrouterUrl').value = openrouterUrl;
+      }
+      if (ollamaUrl) {
+        config.ollama.url = ollamaUrl;
+        document.getElementById('ollamaUrl').value = ollamaUrl;
+      }
+      if (savedProvider) {
+        currentProvider = savedProvider;
+        document.querySelectorAll('.provider-tab').forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.provider === currentProvider);
+        });
+        document.querySelectorAll('.provider-config').forEach(config => {
+          config.style.display = config.id === `${currentProvider}-config` ? 'block' : 'none';
+        });
+      }
+      if (savedModel) {
+        currentModel = savedModel;
+      }
+      
+      logDebug('Configuration loaded from cookies');
+    }
+
+    function saveConfig() {
+      config.openrouter.apiKey = document.getElementById('openrouterKey').value;
+      config.openrouter.url = document.getElementById('openrouterUrl').value;
+      config.ollama.url = document.getElementById('ollamaUrl').value;
+      
+      setCookie('healthbot_openrouter_key', config.openrouter.apiKey);
+      setCookie('healthbot_openrouter_url', config.openrouter.url);
+      setCookie('healthbot_ollama_url', config.ollama.url);
+      setCookie('healthbot_provider', currentProvider);
+      setCookie('healthbot_model', currentModel);
+      
+      logDebug('Configuration saved to cookies');
+      updateStatus('loading', 'Config Saved', 'Reloading models...');
+      setTimeout(loadModels, 500);
+    }
+
+    async function loadModels() {
+      const modelSelect = document.getElementById('modelSelect');
+      if (!modelSelect) return logDebug('Model select element not found');
+      modelSelect.innerHTML = '<option>Loading models...</option>';
+      updateStatus('loading', 'Loading Models', 'Please wait...');
+
+      try {
+        if (currentProvider === 'openrouter') {
+          if (!config.openrouter.apiKey || !isValidUrl(config.openrouter.url)) {
+            throw new Error('Invalid OpenRouter API key or URL');
+          }
+          await loadOpenRouterModels();
+        } else {
+          if (!isValidUrl(config.ollama.url)) throw new Error('Invalid Ollama URL');
+          await loadOllamaModels();
+        }
+      } catch (error) {
+        logDebug(`Failed to load models: ${error.message}`);
+        modelSelect.innerHTML = `<option value="">Failed: ${error.message}</option>`;
+        updateStatus('disconnected', 'Connection Failed', error.message);
+      }
+    }
+
+    async function loadOpenRouterModels() {
+      const response = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: {
+          'Authorization': `Bearer ${config.openrouter.apiKey}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Cure Health Bot'
+        }
+      });
+      if (!response.ok) throw new Error(`OpenRouter error: ${response.status}`);
+      const data = await response.json();
+      availableModels = data.data || [];
+      populateModelSelect();
+      updateStatus('connected', 'Connected', `${availableModels.length} models loaded`);
+    }
+
+    async function loadOllamaModels() {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const tagsUrl = config.ollama.url.replace('/api/chat', '/api/tags');
+      try {
+        logDebug(`Fetching Ollama models from ${tagsUrl}`);
+        const response = await fetch(tagsUrl, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error(`Ollama error: HTTP ${response.status}`);
+        const data = await response.json();
+        logDebug(`Ollama fetch response: ${JSON.stringify(data)}`);
+        availableModels = (data.models || []).map(model => ({
+          id: model.name,
+          name: model.name.split(':')[0]
+        }));
+        populateModelSelect();
+        if (availableModels.length === 0) {
+          updateStatus('disconnected', 'No Models Found', 'Run "ollama serve" and check models with "ollama list"');
+          logDebug('No models found. Ensure Ollama server is running and models are downloaded.');
+        } else {
+          updateStatus('connected', 'Connected', `${availableModels.length} models loaded`);
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+        let errorMsg = error.message;
+        if (error.name === 'AbortError') {
+          errorMsg = 'Request timed out. Is Ollama running at ' + tagsUrl + '?';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMsg = 'Cannot connect to Ollama. Check if server is running or try setting OLLAMA_HOST=0.0.0.0:11434.';
+        }
+        logDebug(`Ollama fetch failed: ${errorMsg}`);
+        throw new Error(errorMsg);
+      }
+    }
+
+    function populateModelSelect() {
+      const modelSelect = document.getElementById('modelSelect');
+      if (!modelSelect) return logDebug('Model select element not found');
+      modelSelect.innerHTML = availableModels.length
+        ? availableModels.map(model => `<option value="${model.id || model.name}">${model.name || model.id}</option>`).join('')
+        : '<option value="">No models available</option>';
+        
+      if (currentModel && availableModels.find(m => (m.id || m.name) === currentModel)) {
+        modelSelect.value = currentModel;
+      }
+    }
+
+    async function sendMessage(tab) {
+      const input = document.getElementById(`${tab}Input`);
+      const sendBtn = document.getElementById(`${tab}Send`);
+      const chatBox = document.getElementById(`${tab}ChatBox`);
+      if (!input || !chatBox) {
+        logDebug(`Input or chat box not found for tab: ${tab}`);
+        return;
+      }
+      if (!input.value.trim()) return;
+      if (!currentModel) {
+        alert('Please select a model first');
+        logDebug('No model selected');
+        return;
+      }
+      if (!sendBtn) return logDebug(`Send button not found for tab: ${tab}`);
+
+      logDebug(`Sending message for tab: ${tab}`);
+      sendBtn.disabled = true;
+      const message = sanitizeInput(input.value.trim());
+      input.value = '';
+
+      const userDiv = document.createElement('div');
+      userDiv.className = 'message user-message';
+      userDiv.textContent = message;
+      chatBox.appendChild(userDiv);
+      scrollChat(tab);
+      conversations[tab].push({ role: 'user', content: message });
+
+      const thinkingDiv = document.createElement('div');
+      thinkingDiv.className = 'message bot-message thinking';
+      thinkingDiv.textContent = '🤔 Thinking...';
+      chatBox.appendChild(thinkingDiv);
+      scrollChat(tab);
+
+      try {
+        updateStatus('loading', 'Processing', 'Getting AI response...');
+        const reply = currentProvider === 'openrouter'
+          ? await sendToOpenRouter(message)
+          : await sendToOllama(tab);
+
+        thinkingDiv.classList.remove('thinking');
+        thinkingDiv.className = 'message bot-message';
+        thinkingDiv.textContent = reply || '⚠️ No reply received';
+        scrollChat(tab);
+        conversations[tab].push({ role: 'assistant', content: reply });
+        updateStatus('connected', 'Connected', 'Last reply received');
+      } catch (error) {
+        thinkingDiv.remove();
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = `Error: ${error.message}`;
+        chatBox.appendChild(errorDiv);
+        scrollChat(tab);
+        logDebug(`Send failed: ${error.message}`);
+        updateStatus('disconnected', 'Error', error.message);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    async function sendToOpenRouter(message) {
+      const response = await fetch(config.openrouter.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.openrouter.apiKey}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Cure Health Bot'
+        },
+        body: JSON.stringify({ model: currentModel, messages: [{ role: 'user', content: message }] })
+      });
+      if (!response.ok) throw new Error(`OpenRouter error: ${response.status}`);
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
+
+    async function sendToOllama(tab) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      try {
+        const response = await fetch(config.ollama.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: conversations[tab],
+            stream: false
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error(`Ollama error: ${response.status}`);
+        const data = await response.json();
+        logDebug(`Ollama response: ${JSON.stringify(data)}`);
+        return data.message?.content || '';
+      } catch (error) {
+        clearTimeout(timeoutId);
+        let errorMsg = error.message;
+        if (error.name === 'AbortError') {
+          errorMsg = 'Request timed out. Is Ollama running at ' + config.ollama.url + '?';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMsg = 'Cannot connect to Ollama. Check server or try setting OLLAMA_HOST=0.0.0.0:11434.';
+        }
+        logDebug(`Ollama send failed: ${errorMsg}`);
+        throw new Error(errorMsg);
+      }
+    }
+
+    async function exportChat(format, tab = currentTab) {
+      const conversation = conversations[tab];
+      if (!conversation.length) return;
+
+      const tabName = tab.charAt(0).toUpperCase() + tab.slice(1);
+      const timestamp = new Date().toLocaleDateString().replace(/\//g, '-');
+      const filename = `Health_Chat_${tabName}_${timestamp}`;
+
+      if (format === 'txt') exportAsText(conversation, filename, tabName);
+      else if (format === 'pdf') await exportAsPDF(conversation, filename, tabName);
+      else if (format === 'word') exportAsWord(conversation, filename, tabName);
+      logDebug(`Exported ${tab} chat as ${format.toUpperCase()}`);
+    }
+
+    function exportAsText(conversation, filename, tabName) {
+      let content = `Cure Health Bot - ${tabName} Chat\n`;
+      content += `Export Date: ${new Date().toLocaleString()}\n`;
+      content += `Model: ${currentModel || 'Unknown'}\n`;
+      content += `Provider: ${currentProvider}\n\n`;
+      conversation.forEach(msg => {
+        content += `[${msg.role === 'user' ? 'You' : 'Health Bot'}]: ${msg.content}\n\n`;
+      });
+      content += 'Disclaimer: AI-generated health information. Consult a professional.\n';
+      downloadBlob(new Blob([content], { type: 'text/plain' }), `${filename}.txt`);
+    }
+
+    async function exportAsPDF(conversation, filename, tabName) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      pdf.setFontSize(18);
+      pdf.text(`Cure Health Bot - ${tabName} Chat`, 20, 25);
+      pdf.setFontSize(10);
+      pdf.text(`Export Date: ${new Date().toLocaleString()}`, 20, 35);
+      pdf.text(`Model: ${currentModel || 'Unknown'} | Provider: ${currentProvider}`, 20, 42);
+      pdf.line(20, 48, 190, 48);
+
+      let yPosition = 60;
+      conversation.forEach(msg => {
+        if (yPosition > 250) { pdf.addPage(); yPosition = 20; }
+        pdf.setFontSize(11);
+        pdf.text(`[${msg.role === 'user' ? 'You' : 'Health Bot'}]:`, 20, yPosition);
+        yPosition += 8;
+        pdf.setFontSize(10);
+        const lines = pdf.splitTextToSize(msg.content, 170);
+        lines.forEach(line => {
+          if (yPosition > 250) { pdf.addPage(); yPosition = 20; }
+          pdf.text(line, 20, yPosition);
+          yPosition += 6;
+        });
+        yPosition += 8;
+      });
+
+      pdf.line(20, yPosition, 190, yPosition);
+      yPosition += 10;
+      pdf.setFontSize(8);
+      const disclaimer = pdf.splitTextToSize('Disclaimer: AI-generated health information. Consult a professional.', 170);
+      disclaimer.forEach(line => pdf.text(line, 20, yPosition += 5));
+      pdf.save(`${filename}.pdf`);
+    }
+
+    function exportAsWord(conversation, filename, tabName) {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+            .header { border-bottom: 2px solid #667eea; padding-bottom: 20px; }
+            .header h1 { color: #667eea; }
+            .meta { color: #666; font-size: 14px; }
+            .message { margin-bottom: 20px; padding: 15px; border-radius: 8px; }
+            .user-message { background: #f0f4ff; border-left: 4px solid #667eea; }
+            .bot-message { background: #f9f9f9; border-left: 4px solid #22c55e; }
+            .disclaimer { margin-top: 40px; padding: 20px; background: #fff3cd; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Cure Health Bot - ${tabName} Chat</h1>
+            <div class="meta">
+              Export Date: ${new Date().toLocaleString()}<br>
+              Model: ${currentModel || 'Unknown'} | Provider: ${currentProvider}
+            </div>
+          </div>
+          ${conversation.map(msg => `
+            <div class="message ${msg.role === 'user' ? 'user' : 'bot'}-message">
+              <div>[${msg.role === 'user' ? 'You' : 'Health Bot'}]:</div>
+              <div>${msg.content.replace(/\n/g, '<br>')}</div>
+            </div>
+          `).join('')}
+          <div class="disclaimer">
+            Disclaimer: AI-generated health information. Consult a professional.
+          </div>
+        </body>
+        </html>
+      `;
+      downloadBlob(new Blob([htmlContent], { type: 'application/msword' }), `${filename}.doc`);
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function setupEventListeners() {
+      document.querySelectorAll('.provider-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.provider-config').forEach(c => c.style.display = 'none');
+          tab.classList.add('active');
+          currentProvider = tab.dataset.provider;
+          const configEl = document.getElementById(`${currentProvider}-config`);
+          if (configEl) configEl.style.display = 'block';
+          logDebug(`Switched to ${currentProvider} provider`);
+          setCookie('healthbot_provider', currentProvider);
+          loadModels();
+        });
+      });
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.dataset.tab;
+          const tabContent = document.getElementById(tabId);
+          if (!tabContent) {
+            logDebug(`Tab content not found for ${tabId}`);
+            return;
+          }
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          tabContent.classList.add('active');
+          currentTab = tabId;
+          scrollChat(currentTab);
+          logDebug(`Switched to tab: ${currentTab}`);
+        });
+      });
+
+      tabs.forEach(tab => {
+        const suffix = tab === 'general' ? '' : tab.charAt(0).toUpperCase();
+        const exportBtn = document.getElementById(`exportBtn${suffix}`);
+        const exportMenu = document.getElementById(`exportMenu${suffix}`);
+        if (exportBtn && exportMenu) {
+          exportBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            document.querySelectorAll('.export-menu').forEach(menu => menu.classList.remove('show'));
+            exportMenu.classList.toggle('show');
+          });
+          exportMenu.querySelectorAll('.export-option').forEach(option => {
+            option.addEventListener('click', () => {
+              exportChat(option.dataset.format, option.dataset.tab || tab);
+              exportMenu.classList.remove('show');
+            });
+          });
+        }
+      });
+
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.export-menu').forEach(menu => menu.classList.remove('show'));
+      });
+
+      tabs.forEach(tab => {
+        const sendBtn = document.getElementById(`${tab}Send`);
+        const input = document.getElementById(`${tab}Input`);
+        if (sendBtn) {
+          sendBtn.addEventListener('click', () => {
+            logDebug(`Send button clicked for tab: ${tab}`);
+            sendMessage(tab);
+          });
+        }
+        if (input) {
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              logDebug(`Enter key pressed for tab: ${tab}`);
+              sendMessage(tab);
+            }
+          });
+        }
+      });
+
+      Object.entries(clearButtonMappings).forEach(([tab, btnId]) => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.addEventListener('click', () => {
+            const chatBox = document.getElementById(`${tab}ChatBox`);
+            if (chatBox) chatBox.innerHTML = '';
+            conversations[tab] = [];
+            logDebug(`Cleared ${tab} chat`);
+          });
+        }
+      });
+
+      document.querySelectorAll('.quick-question').forEach(el => {
+        el.addEventListener('click', () => {
+          const input = document.getElementById(`${currentTab}Input`);
+          if (input) {
+            input.value = el.textContent.trim();
+            logDebug(`Quick question clicked: ${input.value}`);
+            sendMessage(currentTab);
+          }
+        });
+      });
+
+      const debugToggle = document.getElementById('debugToggleBtn');
+      if (debugToggle) {
+        debugToggle.addEventListener('click', () => {
+          const debug = document.getElementById('debugInfo');
+          if (debug) {
+            debug.style.display = debug.style.display === 'none' ? 'block' : 'none';
+            logDebug(`Debug info ${debug.style.display}`);
+          }
+        });
+      }
+
+      const loadModelsBtn = document.getElementById('loadModelsBtn');
+      const saveConfigBtn = document.getElementById('saveConfigBtn');
+      const refreshModelsBtn = document.getElementById('refreshModelsBtn');
+      const testOllamaBtn = document.getElementById('testOllamaBtn');
+      if (loadModelsBtn) loadModelsBtn.addEventListener('click', loadModels);
+      if (saveConfigBtn) saveConfigBtn.addEventListener('click', saveConfig);
+      if (refreshModelsBtn) refreshModelsBtn.addEventListener('click', loadModels);
+      if (testOllamaBtn) {
+        testOllamaBtn.addEventListener('click', async () => {
+          const statusEl = document.getElementById('ollamaStatus');
+          if (statusEl) statusEl.textContent = 'Testing...';
+          const tagsUrl = config.ollama.url.replace('/api/chat', '/api/tags');
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch(tagsUrl, {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+              throw new Error(`Ollama test failed: HTTP ${response.status}`);
+            }
+            const data = await response.json();
+            logDebug(`Ollama test response: ${JSON.stringify(data)}`);
+            statusEl.textContent = data.models && data.models.length ? `Connected ✅ (${data.models.length} models)` : 'Connected ✅ (No models)';
+            updateStatus('connected', 'Connected', 'Ollama server reachable');
+          } catch (error) {
+            let errorMsg = error.message;
+            if (error.name === 'AbortError') {
+              errorMsg = 'Test timed out. Is Ollama running at ' + tagsUrl + '?';
+            } else if (error.message.includes('Failed to fetch')) {
+              errorMsg = 'Cannot connect to Ollama. Check server or try setting OLLAMA_HOST=0.0.0.0:11434.';
+            }
+            statusEl.textContent = `Failed ❌ (${errorMsg})`;
+            logDebug(`Ollama test failed: ${errorMsg}`);
+            updateStatus('disconnected', 'Connection Failed', errorMsg);
+          }
+        });
+      }
+
+      const modelSelect = document.getElementById('modelSelect');
+      if (modelSelect) {
+        modelSelect.addEventListener('change', e => {
+          currentModel = e.target.value;
+          setCookie('healthbot_model', currentModel);
+          logDebug(`Model selected: ${currentModel}`);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+      setupEventListeners();
+      loadModels();
+      scrollChat(currentTab);
+      logDebug('Application initialized');
+    });
+  </script>
+</body>
+</html>
+```
