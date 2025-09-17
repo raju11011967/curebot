@@ -1,4 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cure Health Bot</title>
+  <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js" defer></script>
+  <style>
+    /* CSS Reset for consistent rendering */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Light theme variables */
+      --primary: #3B82F6; /* Soft blue */
+      --secondary: #6B7280; /* Neutral gray */
+      --accent: #EC4899; /* Vibrant pink */
+      --background: #F9FAFB; /* Light gray */
+      --text: #111827; /* Dark gray for text */
+      --error: #EF4444; /* Red for errors */
+      --success: #22C55E; /* Green for success */
+      --border: #D1D5DB; /* Light gray border */
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --gradient: linear-gradient(135deg, #3B82F6 0%, #EC4899 100%);
+      --dark-background: #1F2937; /* Dark mode background */
+      --dark-text: #F9FAFB; /* Dark mode text */
+    }
+
+    /* Dark theme */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #1F2937;
+        --text: #F9FAFB;
+        --border: #4B5563;
+      }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--gradient);
+      min-height: 100vh;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      overflow-x: hidden;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--background);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    header {
+      background: var(--gradient);
+      color: var(--dark-text);
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: clamp(20px, 5vw, 28px);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: clamp(12px, 3vw, 16px);
+    }
+
+    .config-section {
+      background: var(--dark-background);
+      padding: 15px;
+      color: var(--dark-text);
+    }
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .config-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .config-group label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .config-group input, .config-group select {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--dark-text);
+      font-size: 16px;
+    }
+    .config-group input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .provider-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .provider-tab {
+      padding: 12px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      color: var(--dark-text);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+    .provider-tab.active {
+      background: var(--primary);
+      border-bottom: 2px solid var(--accent);
+      color: var(--dark-text);
+    }
+    #llmStatus {
+      background: var(--gradient);
+      padding: 15px;
+      color: var(--dark-text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .status-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex: 1;
+      min-width: 200px;
+    }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-loading {
+      background: #F59E0B;
+      animation: pulse 1.5s infinite;
+    }
+    .status-connected {
+      background: var(--success);
+    }
+    .status-disconnected {
+      background: var(--error);
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .model-selector {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .model-selector label {
+      font-weight: 600;
+      opacity: 0.95;
+      white-space: nowrap;
+    }
+    .model-selector select {
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--dark-text);
+      min-width: 150px;
+      font-size: 14px;
+    }
+    .model-selector option {
+      background: var(--dark-background);
+      color: var(--dark-text);
+      font-size: 13px;
+    }
+    .debug-info {
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--dark-text);
+      padding: 8px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
+      width: 100%;
+      display: none;
+      word-break: break-all;
+    }
+    .debug-info::-webkit-scrollbar {
+      width: 8px;
+    }
+    .debug-info::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    .debug-info::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    .debug-toggle, .btn-small {
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: var(--primary);
+      color: var(--dark-text);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 13px;
+      touch-action: manipulation;
+    }
+    .tabs {
+      display: flex;
+      background: linear-gradient(135deg, #93C5FD, #FCA5A5);
+      gap: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab {
+      padding: 15px 10px;
+      min-width: 100px;
+      text-align: center;
+      font-weight: 700;
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      transition: all 0.25s ease;
+      font-size: 12px;
+      white-space: nowrap;
+      touch-action: manipulation;
+      color: var(--text);
+    }
+    .tab.active {
+      background: var(--primary);
+      color: var(--dark-text);
+      transform: translateY(-2px);
+    }
+    .tab-content {
+      display: none;
+      padding: 0;
+      background: var(--background);
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .chat-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px;
+      background: linear-gradient(135deg, #E5E7EB, #D1D5DB);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .control-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: var(--gradient);
+      color: var(--dark-text);
+      font-weight: 700;
+      touch-action: manipulation;
+      font-size: 14px;
+    }
+    .btn-secondary {
+      background: linear-gradient(135deg, #FECACA, #FCA5A5);
+      color: var(--text);
+    }
+    .export-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .export-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--background);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      min-width: 150px;
+      border: 1px solid var(--border);
+    }
+    .export-menu.show {
+      display: block;
+    }
+    .export-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text);
+      touch-action: manipulation;
+    }
+    .export-option:hover {
+      background: #E5E7EB;
+    }
+    .export-option:last-child {
+      border-bottom: none;
+    }
+    .chatBox {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px;
+      background: var(--background);
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) var(--background);
+      -webkit-overflow-scrolling: touch;
+    }
+    .chatBox::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chatBox::-webkit-scrollbar-track {
+      background: var(--background);
+      border-radius: 4px;
+    }
+    .chatBox::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    .message {
+      margin-bottom: 15px;
+      max-width: 85%;
+      animation: messageSlide 0.35s ease-out;
+      word-wrap: break-word;
+    }
+    @keyframes messageSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+    .user-message {
+      margin-left: auto;
+      background: var(--gradient);
+      color: var(--dark-text);
+      padding: 12px 15px;
+      border-radius: 18px 18px 4px 18px;
+      font-size: 14px;
+    }
+    .bot-message {
+      margin-right: auto;
+      background: var(--background);
+      padding: 12px 15px;
+      border-radius: 18px 18px 18px 4px;
+      border-left: 4px solid var(--primary);
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .input-container {
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      background: var(--background);
+      align-items: center;
+    }
+    .chatInput {
+      flex: 1;
+      padding: 14px 15px;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      font-size: 16px;
+      outline: none;
+      background: #F3F4F6;
+      color: var(--text);
+    }
+    .chatInput:focus {
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+      border-color: var(--primary);
+      background: var(--background);
+    }
+    .sendBtn {
+      padding: 14px 20px;
+      border-radius: 20px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      background: var(--gradient);
+      color: var(--dark-text);
+      touch-action: manipulation;
+      font-size: 14px;
+    }
+    .quick-questions {
+      padding: 15px;
+      background: linear-gradient(135deg, #93C5FD, #FCA5A5);
+    }
+    .questions-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .quick-question {
+      background: var(--background);
+      padding: 15px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      font-weight: 600;
+      text-align: center;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      touch-action: manipulation;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .quick-question:hover {
+      transform: translateY(-2px);
+    }
+    .quick-question[aria-disabled="true"] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .disclaimer {
+      padding: 15px;
+      margin: 15px;
+      border-radius: 12px;
+      font-size: 14px;
+      background: linear-gradient(135deg, #FEE2E2, #FECACA);
+      border-left: 4px solid var(--error);
+      color: var(--text);
+    }
+    .thinking {
+      opacity: 0.7;
+      font-style: italic;
+    }
+    .error-message {
+      background: #FEE2E2;
+      color: var(--error);
+      padding: 12px 15px;
+      border-radius: 18px 18px 18px 4px;
+      border-left: 4px solid var(--error);
+      margin-bottom: 15px;
+      max-width: 85%;
+      font-size: 14px;
+    }
+    @media (max-width: 768px) {
+      body { padding: 5px; }
+      .container { border-radius: 12px; }
+      header { padding: 15px; }
+      .config-section { padding: 10px; }
+      .chat-section { height: 50vh; min-height: 350px; }
+      .chatBox { padding: 15px; }
+      .input-container { padding: 10px; gap: 8px; }
+      .quick-questions { padding: 10px; }
+      .questions-grid { grid-template-columns: 1fr; gap: 8px; }
+      .tab { padding: 12px 8px; font-size: 11px; min-width: 80px; }
+      .model-selector { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .model-selector select { min-width: 100%; }
+      #llmStatus { flex-direction: column; align-items: flex-start; }
+      .status-info { min-width: 100%; }
+      .chat-controls { flex-direction: column; gap: 8px; }
+      .control-group { width: 100%; justify-content: center; }
+      .message { max-width: 95%; }
+    }
+    @media (max-width: 480px) {
+      .chat-section { height: 45vh; min-height: 300px; }
+      .quick-question { padding: 12px; font-size: 13px; }
+      .btn, .sendBtn { padding: 12px 16px; font-size: 13px; }
+      .chatInput { padding: 12px; }
+    }
+    @media (min-width: 769px) {
+      .config-grid { grid-template-columns: 1fr 1fr; }
+      .questions-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    }
+  </style>
+</head>
 <body>
+  <div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+  </div>
   <div class="container">
     <header>
       <h1>Cure Health Bot</h1>
@@ -80,9 +609,9 @@
           <div class="export-dropdown">
             <button class="btn btn-secondary" id="exportBtn">Export Chat ▼</button>
             <div class="export-menu" id="exportMenu">
-              <div class="export-option" data-format="pdf">📄 Export as PDF</div>
-              <div class="export-option" data-format="word">📝 Export as Word</div>
-              <div class="export-option" data-format="txt">📋 Export as Text</div>
+              <div class="export-option" data-format="pdf" data-tab="general">📄 Export as PDF</div>
+              <div class="export-option" data-format="word" data-tab="general">📝 Export as Word</div>
+              <div class="export-option" data-format="txt" data-tab="general">📋 Export as Text</div>
             </div>
           </div>
         </div>
@@ -339,4 +868,561 @@
       <strong>⚠️ Medical Disclaimer:</strong> This bot provides general health information only and should not replace professional medical advice. Always consult with healthcare professionals for medical concerns.
     </div>
   </div>
+  <script>
+    let currentProvider = 'openrouter';
+    let conversationHistories = {};
+    let isStreaming = false;
+    const tabs = ['general', 'diabetes', 'heart', 'mental', 'respiratory', 'women', 'elderly', 'pediatric'];
+    tabs.forEach(tab => {
+      conversationHistories[tab] = [];
+    });
+
+    function addDebugLog(message) {
+      const debugLog = document.getElementById('debugLog');
+      if (debugLog) {
+        const timestamp = new Date().toLocaleTimeString();
+        debugLog.innerHTML += `[${timestamp}] ${message}\n`;
+        debugLog.scrollTop = debugLog.scrollHeight;
+      }
+    }
+
+    function updateConnectionStatus(status, message, subMessage = '') {
+      const indicator = document.getElementById('statusIndicator');
+      const text = document.getElementById('statusText');
+      const sub = document.getElementById('statusSub');
+      if (indicator && text && sub) {
+        indicator.className = `status-indicator status-${status}`;
+        text.textContent = message;
+        sub.textContent = subMessage;
+        addDebugLog(`Status: ${status} - ${message}`);
+      }
+    }
+
+    function setCookie(name, value, days) {
+      let expires = "";
+      if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1);
+        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length));
+      }
+      return null;
+    }
+
+    function saveConfig() {
+      try {
+        const openrouterKeyElement = document.getElementById('openrouterKey');
+        if (!openrouterKeyElement) {
+          throw new Error('OpenRouter API key input element not found');
+        }
+        const openrouterKey = openrouterKeyElement.value.trim();
+        if (!openrouterKey) {
+          addDebugLog('Warning: OpenRouter API key is empty');
+          alert('Please enter an OpenRouter API key.');
+          return;
+        }
+        const config = {
+          provider: currentProvider,
+          openrouter: {
+            key: openrouterKey,
+            url: document.getElementById('openrouterUrl').value.trim() || 'https://openrouter.ai/api/v1/chat/completions'
+          },
+          ollama: {
+            url: document.getElementById('ollamaUrl').value.trim() || 'http://localhost:11434/api/chat'
+          },
+          selectedModel: document.getElementById('modelSelect').value || ''
+        };
+        const configString = JSON.stringify(config);
+        setCookie('curebotConfig', configString, 30);
+        const savedCookie = getCookie('curebotConfig');
+        if (savedCookie && JSON.parse(savedCookie).openrouter.key === openrouterKey) {
+          openrouterKeyElement.value = openrouterKey;
+          addDebugLog(`Configuration saved successfully, API key: ${openrouterKey.slice(0, 4)}...`);
+          alert('OpenRouter API key saved successfully!');
+        } else {
+          throw new Error('Failed to verify API key in saved cookie');
+        }
+      } catch (error) {
+        addDebugLog(`Failed to save configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
+        alert(`Error saving API key: ${error.message}`);
+      }
+    }
+
+    function loadConfig() {
+      try {
+        const saved = getCookie('curebotConfig');
+        if (saved) {
+          const config = JSON.parse(saved);
+          if (!config || typeof config !== 'object') {
+            throw new Error('Invalid configuration format');
+          }
+          currentProvider = config.provider || 'openrouter';
+          let retries = 0;
+          const maxRetries = 5;
+          const setInputs = () => {
+            const openrouterKeyElement = document.getElementById('openrouterKey');
+            if (!openrouterKeyElement && retries < maxRetries) {
+              addDebugLog('OpenRouter key input not ready, retrying...');
+              retries++;
+              setTimeout(setInputs, 100);
+              return;
+            }
+            if (!openrouterKeyElement) {
+              throw new Error('OpenRouter key input not found after retries');
+            }
+            openrouterKeyElement.value = config.openrouter?.key || '';
+            document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
+            document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
+            document.querySelectorAll('.provider-tab').forEach(tab => {
+              tab.classList.toggle('active', tab.dataset.provider === currentProvider);
+            });
+            document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
+            document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+            if (config.selectedModel) {
+              const modelSelect = document.getElementById('modelSelect');
+              const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
+              if (optionExists) {
+                modelSelect.value = config.selectedModel;
+              }
+            }
+            addDebugLog(`Configuration loaded, API key: ${config.openrouter?.key ? config.openrouter.key.slice(0, 4) + '...' : 'none'} (Mobile: ${navigator.userAgent})`);
+          };
+          setTimeout(setInputs, 0);
+        } else {
+          addDebugLog('No configuration found in cookies (Mobile: ' + navigator.userAgent + ')');
+        }
+      } catch (error) {
+        addDebugLog(`Failed to load configuration: ${error.message} (Mobile: ${navigator.userAgent})`);
+      }
+    }
+
+    async function testOllamaConnection() {
+      const url = document.getElementById('ollamaUrl').value;
+      const statusElement = document.getElementById('ollamaStatus');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      try {
+        addDebugLog('Testing Ollama connection...');
+        statusElement.textContent = 'Testing...';
+        const testUrl = url.replace('/api/chat', '/api/tags');
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (response.ok) {
+          statusElement.textContent = 'Connected ✓';
+          statusElement.style.color = '#22c55e';
+          addDebugLog('Ollama connection successful');
+          updateConnectionStatus('connected', 'Ollama Connected', 'Ready to chat');
+          return true;
+        } else {
+          throw new Error(`Server responded with status: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+        statusElement.textContent = 'Connection failed ✗';
+        statusElement.style.color = '#ef4444';
+        let errorMessage = error.message;
+        if (error.name === 'AbortError') {
+          errorMessage = 'Connection timed out after 5 seconds';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to reach Ollama server. Ensure it is running and accessible at ' + url;
+        }
+        addDebugLog(`Ollama connection failed: ${errorMessage}`);
+        updateConnectionStatus('disconnected', 'Connection Failed', errorMessage);
+        return false;
+      }
+    }
+
+    async function loadModels() {
+      const modelSelect = document.getElementById('modelSelect');
+      const cacheKey = `${currentProvider}_models`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const { models, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+          modelSelect.innerHTML = '<option value="">Select a model</option>';
+          models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.id;
+            option.textContent = model.name;
+            modelSelect.appendChild(option);
+          });
+          updateConnectionStatus('connected', `${currentProvider} Connected`, `${models.length} models loaded from cache`);
+          addDebugLog(`Loaded ${models.length} models from cache`);
+          return;
+        }
+      }
+      modelSelect.innerHTML = '<option value="">Loading models...</option>';
+      try {
+        updateConnectionStatus('loading', 'Loading Models', 'Please wait...');
+        let models = [];
+        if (currentProvider === 'openrouter') {
+          const apiKey = document.getElementById('openrouterKey').value;
+          if (!apiKey) {
+            throw new Error('OpenRouter API key is required');
+          }
+          const response = await fetch('https://openrouter.ai/api/v1/models', {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (!response.ok) {
+            throw new Error(`Failed to fetch models: ${response.status}`);
+          }
+          const data = await response.json();
+          models = data.data.map(model => ({ id: model.id, name: `${model.id} - ${model.pricing?.prompt || '0'}/1K tokens` }));
+        } else if (currentProvider === 'ollama') {
+          const url = document.getElementById('ollamaUrl').value;
+          const modelsUrl = url.replace('/api/chat', '/api/tags');
+          const response = await fetch(modelsUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch Ollama models: ${response.status}`);
+          }
+          const data = await response.json();
+          models = data.models?.map(model => ({
+            id: model.name,
+            name: `${model.name} (${Math.round(model.size / 1024 / 1024 / 1024 * 100) / 100}GB)`
+          })) || [];
+        }
+        localStorage.setItem(cacheKey, JSON.stringify({ models, timestamp: Date.now() }));
+        modelSelect.innerHTML = '<option value="">Select a model</option>';
+        models.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.id;
+          option.textContent = model.name;
+          modelSelect.appendChild(option);
+        });
+        updateConnectionStatus('connected', `${currentProvider} Connected`, `${models.length} models loaded`);
+        addDebugLog(`Loaded ${models.length} ${currentProvider} models`);
+      } catch (error) {
+        modelSelect.innerHTML = '<option value="">Failed to load models</option>';
+        updateConnectionStatus('disconnected', 'Connection Failed', error.message);
+        addDebugLog(`Model loading failed: ${error.message}`);
+      }
+    }
+
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    async function sendMessage(tabName, message) {
+      message = sanitizeInput(message.trim());
+      if (!message) return;
+      const chatBox = document.getElementById(`${tabName}ChatBox`);
+      const input = document.getElementById(`${tabName}Input`);
+      if (isStreaming) {
+        addDebugLog('Already processing a message, please wait...');
+        return;
+      }
+      const selectedModel = document.getElementById('modelSelect').value;
+      if (!selectedModel) {
+        addMessage(tabName, 'Please select a model first.', 'error');
+        return;
+      }
+      addMessage(tabName, message, 'user');
+      input.value = '';
+      conversationHistories[tabName].push({ role: 'user', content: message });
+      const thinkingDiv = document.createElement('div');
+      thinkingDiv.className = 'message bot-message thinking';
+      thinkingDiv.innerHTML = 'Thinking...';
+      chatBox.appendChild(thinkingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      isStreaming = true;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      try {
+        let response;
+        if (currentProvider === 'openrouter') {
+          const apiKey = document.getElementById('openrouterKey').value;
+          const apiUrl = document.getElementById('openrouterUrl').value;
+          const messages = [
+            {
+              role: 'system',
+              content: `You are a helpful healthcare assistant focused on ${tabName} health. Provide informative, accurate, and empathetic responses. Always remind users to consult healthcare professionals for serious concerns. Keep responses concise but comprehensive.`
+            },
+            ...conversationHistories[tabName]
+          ];
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': window.location.origin,
+              'X-Title': 'CureBot Health Assistant'
+            },
+            body: JSON.stringify({
+              model: selectedModel,
+              messages: messages,
+              temperature: 0.7,
+              max_tokens: 1000
+            }),
+            signal: controller.signal
+          });
+        } else if (currentProvider === 'ollama') {
+          const apiUrl = document.getElementById('ollamaUrl').value;
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: selectedModel,
+              messages: [
+                {
+                  role: 'system',
+                  content: `You are a helpful healthcare assistant focused on ${tabName} health. Provide informative, accurate, and empathetic responses. Always remind users to consult healthcare professionals for serious concerns. Keep responses concise but comprehensive.`
+                },
+                ...conversationHistories[tabName]
+              ],
+              stream: false
+            }),
+            signal: controller.signal
+          });
+        }
+        clearTimeout(timeoutId);
+        chatBox.removeChild(thinkingDiv);
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        let botResponse = '';
+        if (currentProvider === 'openrouter') {
+          if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+            throw new Error('Invalid response format from OpenRouter API');
+          }
+          botResponse = data.choices[0].message.content;
+        } else if (currentProvider === 'ollama') {
+          if (!data.message || !data.message.content) {
+            throw new Error('Invalid response format from Ollama API');
+          }
+          botResponse = data.message.content;
+        }
+        addMessage(tabName, botResponse, 'bot');
+        conversationHistories[tabName].push({ role: 'assistant', content: botResponse });
+        addDebugLog(`Message sent successfully via ${currentProvider}`);
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (thinkingDiv.parentNode) {
+          chatBox.removeChild(thinkingDiv);
+        }
+        if (error.name === 'AbortError') {
+          addMessage(tabName, 'Error: Request timed out after 30 seconds.', 'error');
+          addDebugLog('Chat request timed out');
+        } else {
+          addMessage(tabName, `Error: ${error.message}`, 'error');
+          addDebugLog(`Chat error: ${error.message}`);
+        }
+      } finally {
+        isStreaming = false;
+      }
+    }
+
+    function addMessage(tabName, message, type) {
+      const chatBox = document.getElementById(`${tabName}ChatBox`);
+      if (chatBox) {
+        const messageDiv = document.createElement('div');
+        if (type === 'user') {
+          messageDiv.className = 'message user-message';
+        } else if (type === 'error') {
+          messageDiv.className = 'error-message';
+        } else {
+          messageDiv.className = 'message bot-message';
+        }
+        messageDiv.innerHTML = message.replace(/\n/g, '<br>');
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    }
+
+    function clearChat(tabName) {
+      const chatBox = document.getElementById(`${tabName}ChatBox`);
+      if (chatBox) {
+        chatBox.innerHTML = '';
+        conversationHistories[tabName] = [];
+        addDebugLog(`Chat cleared for ${tabName} tab`);
+      }
+    }
+
+    async function exportChat(tabName, format) {
+      const history = conversationHistories[tabName];
+      if (history.length === 0) {
+        alert('No chat history to export');
+        return;
+      }
+      let content = `CureBot ${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Health Chat Export\n`;
+      content += `Generated on: ${new Date().toLocaleString()}\n\n`;
+      history.forEach((msg, index) => {
+        content += `${msg.role.toUpperCase()}: ${msg.content}\n\n`;
+      });
+      if (format === 'txt') {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `curebot-${tabName}-chat.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else if (format === 'pdf') {
+        if (typeof jspdf !== 'undefined') {
+          const { jsPDF } = jspdf;
+          const doc = new jsPDF();
+          doc.setFontSize(12);
+          doc.text(content, 10, 10);
+          doc.save(`curebot-${tabName}-chat.pdf`);
+        } else {
+          alert('PDF export not supported. Please include jsPDF library.');
+        }
+      } else if (format === 'word') {
+        alert('Word export not implemented. Please include docx library.');
+      }
+      addDebugLog(`Chat exported as ${format} for ${tabName}`);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      setTimeout(() => {
+        if (loadingSpinner) {
+          loadingSpinner.style.display = 'none';
+        }
+      }, 500); // Hide spinner after 500ms
+
+      loadConfig();
+      document.querySelectorAll('.provider-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          currentProvider = this.dataset.provider;
+          document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
+          document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+          updateConnectionStatus('disconnected', 'Not Connected', 'Configure your API settings');
+          const modelSelect = document.getElementById('modelSelect');
+          if (modelSelect) {
+            modelSelect.innerHTML = '<option value="">Configure provider first</option>';
+          }
+        });
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const targetTab = this.dataset.tab;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+          this.classList.add('active');
+          const targetContent = document.getElementById(targetTab);
+          if (targetContent) {
+            targetContent.classList.add('active');
+          }
+        });
+      });
+      const testOllamaBtn = document.getElementById('testOllamaBtn');
+      if (testOllamaBtn) {
+        testOllamaBtn.addEventListener('click', testOllamaConnection);
+      }
+      const loadModelsBtn = document.getElementById('loadModelsBtn');
+      if (loadModelsBtn) {
+        loadModelsBtn.addEventListener('click', loadModels);
+      }
+      const saveConfigBtn = document.getElementById('saveConfigBtn');
+      if (saveConfigBtn) {
+        saveConfigBtn.addEventListener('click', saveConfig);
+      }
+      const refreshModelsBtn = document.getElementById('refreshModelsBtn');
+      if (refreshModelsBtn) {
+        refreshModelsBtn.addEventListener('click', loadModels);
+      }
+      const debugToggleBtn = document.getElementById('debugToggleBtn');
+      if (debugToggleBtn) {
+        debugToggleBtn.addEventListener('click', function() {
+          const debugInfo = document.getElementById('debugInfo');
+          if (debugInfo) {
+            debugInfo.style.display = debugInfo.style.display === 'block' ? 'none' : 'block';
+          }
+        });
+      }
+      tabs.forEach(tab => {
+        const input = document.getElementById(`${tab}Input`);
+        const sendBtn = document.getElementById(`${tab}Send`);
+        const clearBtn = document.getElementById(`clearChatBtn${tab.charAt(0).toUpperCase()}`);
+        if (sendBtn && input) {
+          sendBtn.addEventListener('click', () => sendMessage(tab, input.value));
+          input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(tab, this.value);
+            }
+          });
+        }
+        if (clearBtn) {
+          clearBtn.addEventListener('click', () => clearChat(tab));
+        }
+        const quickQuestions = document.querySelectorAll(`#${tab} .quick-question`);
+        quickQuestions.forEach(question => {
+          question.addEventListener('click', function() {
+            if (isStreaming) return;
+            question.setAttribute('aria-disabled', 'true');
+            question.style.opacity = '0.6';
+            if (input) {
+              input.value = this.textContent;
+              sendMessage(tab, this.textContent).finally(() => {
+                question.setAttribute('aria-disabled', 'false');
+                question.style.opacity = '1';
+              });
+            }
+          });
+          question.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (isStreaming) return;
+              question.setAttribute('aria-disabled', 'true');
+              question.style.opacity = '0.6';
+              if (input) {
+                input.value = this.textContent;
+                sendMessage(tab, this.textContent).finally(() => {
+                  question.setAttribute('aria-disabled', 'false');
+                  question.style.opacity = '1';
+                });
+              }
+            }
+          });
+        });
+        const exportBtn = document.getElementById(`exportBtn${tab.charAt(0).toUpperCase()}`);
+        const exportMenu = document.getElementById(`exportMenu${tab.charAt(0).toUpperCase()}`);
+        if (exportBtn && exportMenu) {
+          exportBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            exportMenu.classList.toggle('show');
+          });
+          exportMenu.addEventListener('click', function(e) {
+            if (e.target.classList.contains('export-option')) {
+              const format = e.target.dataset.format;
+              exportChat(tab, format);
+              exportMenu.classList.remove('show');
+            }
+          });
+        }
+      });
+      document.addEventListener('click', function() {
+        document.querySelectorAll('.export-menu').forEach(menu => {
+          menu.classList.remove('show');
+        });
+      });
+      addDebugLog('CureBot initialized successfully');
+    });
+  </script>
 </body>
+</html>
