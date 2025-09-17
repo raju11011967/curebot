@@ -526,7 +526,6 @@
       <div class="tab" data-tab="elderly">Elderly Care</div>
       <div class="tab" data-tab="pediatric">Pediatric Health</div>
     </div>
-    <!-- General Health Tab -->
     <div id="general" class="tab-content active">
       <div class="chat-controls">
         <div class="control-group">
@@ -560,7 +559,6 @@
         </div>
       </div>
     </div>
-    <!-- Diabetes Tab -->
     <div id="diabetes" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -594,7 +592,6 @@
         </div>
       </div>
     </div>
-    <!-- Heart Health Tab -->
     <div id="heart" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -628,7 +625,6 @@
         </div>
       </div>
     </div>
-    <!-- Mental Wellness Tab -->
     <div id="mental" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -662,7 +658,6 @@
         </div>
       </div>
     </div>
-    <!-- Respiratory Health Tab -->
     <div id="respiratory" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -696,7 +691,6 @@
         </div>
       </div>
     </div>
-    <!-- Women's Health Tab -->
     <div id="women" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -730,7 +724,6 @@
         </div>
       </div>
     </div>
-    <!-- Elderly Care Tab -->
     <div id="elderly" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -764,7 +757,6 @@
         </div>
       </div>
     </div>
-    <!-- Pediatric Health Tab -->
     <div id="pediatric" class="tab-content">
       <div class="chat-controls">
         <div class="control-group">
@@ -803,25 +795,19 @@
     </div>
   </div>
   <script>
-    // Global variables
     let currentProvider = 'openrouter';
     let conversationHistories = {};
     let isStreaming = false;
-
-    // Initialize conversation histories for all tabs
     const tabs = ['general', 'diabetes', 'heart', 'mental', 'respiratory', 'women', 'elderly', 'pediatric'];
     tabs.forEach(tab => {
       conversationHistories[tab] = [];
     });
-
-    // Utility functions
     function addDebugLog(message) {
       const debugLog = document.getElementById('debugLog');
       const timestamp = new Date().toLocaleTimeString();
       debugLog.innerHTML += `[${timestamp}] ${message}\n`;
       debugLog.scrollTop = debugLog.scrollHeight;
     }
-
     function updateConnectionStatus(status, message, subMessage = '') {
       const indicator = document.getElementById('statusIndicator');
       const text = document.getElementById('statusText');
@@ -831,8 +817,6 @@
       sub.textContent = subMessage;
       addDebugLog(`Status: ${status} - ${message}`);
     }
-
-    // Utility function to set a cookie
     function setCookie(name, value, days) {
       let expires = "";
       if (days) {
@@ -840,11 +824,8 @@
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
       }
-      // Removed Secure flag for HTTP testing; re-add for HTTPS production
       document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Strict";
     }
-
-    // Utility function to get a cookie
     function getCookie(name) {
       const nameEQ = name + "=";
       const ca = document.cookie.split(';');
@@ -855,37 +836,41 @@
       }
       return null;
     }
-
-    // Save configuration to a cookie
     function saveConfig() {
       try {
+        const openrouterKeyElement = document.getElementById('openrouterKey');
+        if (!openrouterKeyElement) {
+          throw new Error('OpenRouter API key input element not found');
+        }
+        const openrouterKey = openrouterKeyElement.value.trim();
+        if (!openrouterKey) {
+          addDebugLog('Warning: OpenRouter API key is empty');
+        }
         const config = {
           provider: currentProvider,
           openrouter: {
-            key: document.getElementById('openrouterKey').value || '',
-            url: document.getElementById('openrouterUrl').value || 'https://openrouter.ai/api/v1/chat/completions'
+            key: openrouterKey,
+            url: document.getElementById('openrouterUrl').value.trim() || 'https://openrouter.ai/api/v1/chat/completions'
           },
           ollama: {
-            url: document.getElementById('ollamaUrl').value || 'http://localhost:11434/api/chat'
+            url: document.getElementById('ollamaUrl').value.trim() || 'http://localhost:11434/api/chat'
           },
           selectedModel: document.getElementById('modelSelect').value || ''
         };
         const configString = JSON.stringify(config);
-        setCookie('curebotConfig', configString, 30); // Store for 30 days
-        // Verify cookie was set
+        setCookie('curebotConfig', configString, 30);
         const savedCookie = getCookie('curebotConfig');
-        if (savedCookie && savedCookie === configString) {
-          addDebugLog('Configuration saved successfully to cookie');
+        if (savedCookie && JSON.parse(savedCookie).openrouter.key === openrouterKey) {
+          addDebugLog('Configuration saved successfully, including API key');
+          alert('Configuration saved successfully!');
         } else {
-          throw new Error('Failed to verify cookie storage');
+          throw new Error('Failed to verify API key in saved cookie');
         }
       } catch (error) {
         addDebugLog(`Failed to save configuration: ${error.message}`);
-        alert('Error saving configuration: ' + error.message);
+        alert(`Error saving configuration: ${error.message}`);
       }
     }
-
-    // Load configuration from a cookie
     function loadConfig() {
       try {
         const saved = getCookie('curebotConfig');
@@ -895,7 +880,12 @@
             throw new Error('Invalid configuration format');
           }
           currentProvider = config.provider || 'openrouter';
-          document.getElementById('openrouterKey').value = config.openrouter?.key || '';
+          const openrouterKeyElement = document.getElementById('openrouterKey');
+          if (openrouterKeyElement) {
+            openrouterKeyElement.value = config.openrouter?.key || '';
+          } else {
+            addDebugLog('Warning: OpenRouter API key input element not found during load');
+          }
           document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
           document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
           document.querySelectorAll('.provider-tab').forEach(tab => {
@@ -903,7 +893,6 @@
           });
           document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
           document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
-          // Restore selected model if available
           if (config.selectedModel) {
             const modelSelect = document.getElementById('modelSelect');
             const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
@@ -912,6 +901,11 @@
             }
           }
           addDebugLog('Configuration loaded from cookie');
+          if (config.openrouter?.key) {
+            addDebugLog('OpenRouter API key loaded successfully');
+          } else {
+            addDebugLog('No OpenRouter API key found in loaded configuration');
+          }
         } else {
           addDebugLog('No configuration found in cookies');
         }
@@ -919,13 +913,11 @@
         addDebugLog(`Failed to load configuration: ${error.message}`);
       }
     }
-
-    // Test Ollama connection with timeout and enhanced error handling
     async function testOllamaConnection() {
       const url = document.getElementById('ollamaUrl').value;
       const statusElement = document.getElementById('ollamaStatus');
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       try {
         addDebugLog('Testing Ollama connection...');
         statusElement.textContent = 'Testing...';
@@ -960,8 +952,6 @@
         return false;
       }
     }
-
-    // Load models for both providers
     async function loadModels() {
       const modelSelect = document.getElementById('modelSelect');
       modelSelect.innerHTML = '<option value="">Loading models...</option>';
@@ -1021,8 +1011,6 @@
         addDebugLog(`Model loading failed: ${error.message}`);
       }
     }
-
-    // Send message to the selected provider
     async function sendMessage(tabName, message) {
       const chatBox = document.getElementById(`${tabName}ChatBox`);
       const input = document.getElementById(`${tabName}Input`);
@@ -1114,7 +1102,6 @@
         isStreaming = false;
       }
     }
-
     function addMessage(tabName, message, type) {
       const chatBox = document.getElementById(`${tabName}ChatBox`);
       const messageDiv = document.createElement('div');
@@ -1129,14 +1116,12 @@
       chatBox.appendChild(messageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
-
     function clearChat(tabName) {
       const chatBox = document.getElementById(`${tabName}ChatBox`);
       chatBox.innerHTML = '';
       conversationHistories[tabName] = [];
       addDebugLog(`Chat cleared for ${tabName} tab`);
     }
-
     function exportChat(tabName, format) {
       const history = conversationHistories[tabName];
       if (history.length === 0) {
@@ -1159,8 +1144,6 @@
       URL.revokeObjectURL(url);
       addDebugLog(`Chat exported as ${format} for ${tabName}`);
     }
-
-    // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
       loadConfig();
       document.querySelectorAll('.provider-tab').forEach(tab => {
