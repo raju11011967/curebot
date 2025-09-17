@@ -9,254 +9,35 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: #f5f7fa;
       min-height: 100vh;
       color: #111827;
       display: flex;
       justify-content: center;
-      padding: 20px;
+      align-items: flex-start;
     }
     .container {
       width: 100%;
       max-width: 1200px;
+      max-height: 100vh;
+      overflow-y: auto;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       box-shadow: 0 20px 40px rgba(0,0,0,0.08);
       border-radius: 16px;
-      overflow: hidden;
-    }
-    header {
-      background: linear-gradient(135deg, #2d6cdf 0%, #6b46c1 100%);
-      color: white;
-      padding: 28px;
-      text-align: center;
-    }
-    header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
-    header p { margin: 0; opacity: 0.95; }
-    .config-section {
-      background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-      padding: 20px;
-      color: white;
-    }
-    .config-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 15px;
-    }
-    .config-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .config-group label { font-weight: 600; font-size: 14px; }
-    .config-group input, .config-group select {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
-    .config-group input::placeholder { color: rgba(255,255,255,0.6); }
-    .provider-tabs { display: flex; gap: 0; margin-bottom: 15px; }
-    .provider-tab {
-      padding: 12px 20px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: white;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .provider-tab.active { background: rgba(255,255,255,0.2); border-bottom: 2px solid #4facfe; }
-    #llmStatus {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      padding: 18px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .status-info { display: flex; gap: 12px; align-items: center; }
-    .status-indicator { width: 12px; height: 12px; border-radius: 50%; }
-    .status-loading { background: #ff9800; box-shadow: 0 0 8px rgba(255,152,0,0.6); animation: pulse 1.5s infinite; }
-    .status-connected { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.6); }
-    .status-disconnected { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.6); }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-    .model-selector { display: flex; gap: 10px; align-items: center; }
-    .model-selector label { font-weight: 600; opacity: 0.95; }
-    .model-selector select {
-      padding: 8px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.12);
-      color: white;
-      min-width: 220px;
-    }
-    .model-selector option { background: #374151; color: white; font-size: 13px; }
-    .debug-info {
-      background: rgba(0,0,0,0.08);
-      color: white;
-      padding: 8px;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      max-height: 150px;
-      overflow-y: scroll;
       scrollbar-width: thin;
-      scrollbar-color: #4facfe rgba(255,255,255,0.1);
-      width: 100%;
-      display: none;
+      scrollbar-color: #667eea rgba(255,255,255,0.1);
     }
-    .debug-info::-webkit-scrollbar {
+    .container::-webkit-scrollbar {
       width: 8px;
     }
-    .debug-info::-webkit-scrollbar-track {
+    .container::-webkit-scrollbar-track {
       background: rgba(255,255,255,0.1);
       border-radius: 4px;
     }
-    .debug-info::-webkit-scrollbar-thumb {
-      background: #4facfe;
+    .container::-webkit-scrollbar-thumb {
+      background: #667eea;
       border-radius: 4px;
-    }
-    .debug-toggle, .btn-small {
-      padding: 6px 10px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.18);
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .tabs {
-      display: flex;
-      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-      gap: 0;
-      overflow-x: auto;
-    }
-    .tab {
-      padding: 18px 12px;
-      min-width: 120px;
-      text-align: center;
-      font-weight: 700;
-      cursor: pointer;
-      border-right: 1px solid rgba(255,255,255,0.5);
-      transition: all 0.25s ease;
-      font-size: 13px;
-    }
-    .tab.active {
-      background: linear-gradient(135deg, rgba(102,126,234,0.12), rgba(118,75,162,0.12));
-      color: #2d6cdf;
-      transform: translateY(-4px);
-    }
-    .tab-content { display: none; padding: 0; background: #fff; }
-    .tab-content.active { display: block; }
-    .chat-section {
-      display: flex;
-      flex-direction: column;
-      min-height: 620px;
-      max-height: 620px;
-      overflow: hidden;
-    }
-    .chat-controls {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px;
-      background: linear-gradient(135deg, #fff7ed, #ffedd5);
-      align-items: center;
-    }
-    .control-group { display: flex; gap: 10px; align-items: center; }
-    .btn {
-      padding: 10px 16px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      font-weight: 700;
-    }
-    .btn-secondary { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #111827; }
-    .export-dropdown { position: relative; display: inline-block; }
-    .export-menu {
-      display: none;
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-      z-index: 1000;
-      min-width: 150px;
-      border: 1px solid #e5e7eb;
-    }
-    .export-menu.show { display: block; }
-    .export-option {
-      padding: 12px 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-      border-bottom: 1px solid #f3f4f6;
-      font-weight: 600;
-      color: #374151;
-    }
-    .export-option:hover { background: #f8fafc; }
-    .export-option:last-child { border-bottom: none; }
-    .chatBox {
-      flex: 1;
-      overflow-y: scroll;
-      padding: 26px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      max-height: 100%;
-      scrollbar-width: thin;
-      scrollbar-color: #667eea #f5f7fa;
-    }
-    .chatBox::-webkit-scrollbar {
-      width: 8px;
-    }
-    .chatBoxぶ
-
-System: It looks like your HTML code is incomplete, as it cuts off in the JavaScript section at the `DOMContentLoaded` event listener. Since you requested the complete HTML code without comments, I’ll provide the full code with the JavaScript section completed, removing all JavaScript comments while keeping the existing HTML, CSS, and JavaScript unchanged up to the point of truncation. The completion will close the `DOMContentLoaded` event listener and add necessary initialization logic to ensure the "Cure Health Bot" application functions correctly.
-
-### Completion Details
-- **Preserving Existing Code**: All HTML, CSS, and JavaScript up to the line `const initialTab =` remain unchanged, except for removing all JavaScript comments (e.g., `// Cookie management functions`, `// Global state`, etc.).
-- **JavaScript Completion**: The `DOMContentLoaded` event listener is completed by:
-  - Removing the incomplete `const initialTab =` line, as `currentTab` is already defined as `'general'` in the global state.
-  - Adding calls to `setupEventListeners()` to enable interactivity, `loadModels()` to populate the AI model selector, and `scrollChat(currentTab)` to initialize the default tab’s chat box.
-  - Adding `logDebug('Application initialized')` for consistency with the app’s debugging approach.
-- **Comment Removal**: All single-line (`//`) and block (`/* */`) comments in the JavaScript are removed, keeping all functional code intact.
-- **Artifact**: The complete HTML is wrapped in an `<xaiArtifact>` tag with a new UUID, as this is a new submission, and `contentType` is set to `text/html`.
-
-### Complete HTML Code (Without Comments)
-
-<xaiArtifact artifact_id="68ed2991-04ca-49a3-9cbf-029af2ba155e" artifact_version_id="0a9e6750-747c-4fe6-8d57-9502e8325d81" title="index.html" contentType="text/html">
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cure Health Bot</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-      min-height: 100vh;
-      color: #111827;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-      border-radius: 16px;
-      overflow: hidden;
     }
     header {
       background: linear-gradient(135deg, #2d6cdf 0%, #6b46c1 100%);
