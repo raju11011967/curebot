@@ -1,1 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cure Health Bot</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      color: #111827;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg, #2d6cdf 0%, #6b46c1 100%);
+      color: white;
+      padding: 28px;
+      text-align: center;
+    }
+    header h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    header p { margin: 0; opacity: 0.95; }
+    .chat-section {
+      display: flex;
+      flex-direction: column;
+      min-height: 500px;
+      max-height: 500px;
+      overflow: hidden;
+    }
+    .chatBox {
+      flex: 1;
+      overflow-y: scroll;
+      padding: 26px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      max-height: 400px;
+      scrollbar-width: thin;
+      scrollbar-color: #667eea #f5f7fa;
+    }
+    .chatBox::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chatBox::-webkit-scrollbar-track {
+      background: #f5f7fa;
+      border-radius: 4px;
+    }
+    .chatBox::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 4px;
+    }
+    .message { 
+      margin-bottom: 18px; 
+      max-width: 80%; 
+      animation: messageSlide 0.35s ease-out; 
+      word-wrap: break-word;
+    }
+    @keyframes messageSlide { 
+      from { opacity: 0; transform: translateY(12px); } 
+      to { opacity: 1; transform: none; } 
+    }
+    .user-message {
+      margin-left: auto;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 18px 18px 4px 18px;
+    }
+    .bot-message {
+      margin-right: auto;
+      background: white;
+      padding: 12px 18px;
+      border-radius: 18px 18px 18px 4px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.04);
+    }
+    .loading {
+      opacity: 0.7;
+      font-style: italic;
+    }
+    .error {
+      background: #fee2e2 !important;
+      color: #dc2626 !important;
+      border-left: 4px solid #dc2626 !important;
+    }
+    .input-container {
+      display: flex;
+      gap: 12px;
+      padding: 22px;
+      background: white;
+      align-items: center;
+    }
+    .chatInput {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 20px;
+      border: 2px solid #e6eefc;
+      font-size: 16px;
+      outline: none;
+      background: #f8fafc;
+    }
+    .chatInput:focus { 
+      box-shadow: 0 0 0 6px rgba(102,126,234,0.06); 
+      border-color: #667eea; 
+      background: white; 
+    }
+    .sendBtn {
+      padding: 12px 26px;
+      border-radius: 20px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+    .sendBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+    .sendBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .quick-questions {
+      padding: 24px;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    }
+    .questions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .quick-question {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+      font-weight: 600;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .quick-question:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .disclaimer {
+      padding: 18px;
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      margin: 18px;
+      border-radius: 12px;
+      border-left: 4px solid #f97316;
+      font-size: 14px;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-connected { background: #22c55e; }
+    .status-loading { background: #ff9800; animation: pulse 1.5s infinite; }
+    .status-error { background: #ef4444; }
+    @keyframes pulse { 
+      0% { transform: scale(1); opacity: 1; } 
+      50% { transform: scale(1.1); opacity: 0.7; } 
+      100% { transform: scale(1); opacity: 1; } 
+    }
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .btn-clear {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .btn-clear:hover {
+      background: #fecaca;
+    }
+    @media (max-width: 768px) {
+      .chat-section { min-height: 400px; max-height: 400px; }
+      .chatBox { max-height: 300px; }
+      .container { margin: 8px; }
+      .questions-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏥 CureBot Health Assistant</h1>
+      <p>Your AI-powered health companion for medical guidance and wellness support</p>
+      <div style="margin-top: 10px; font-size: 14px;">
+        <span class="status-indicator" id="connectionStatus"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </header>
 
+    <div class="control-buttons">
+      <button class="btn btn-clear" onclick="clearChat()">🗑️ Clear Chat</button>
+      <button class="btn" style="background: #e0f2fe; color: #0284c7;" onclick="testConnection()">🔍 Test Connection</button>
+    </div>
+
+    <div class="chat-section">
+      <div class="chatBox" id="chatMessages" aria-live="polite">
+        <div class="bot-message">
+          <strong>CureBot:</strong>
+          <p>Hello! I'm CureBot, your AI health assistant. I can help you with:</p>
+          <ul style="margin-left: 20px; margin-top: 10px;">
+            <li>General health questions and symptoms</li>
+            <li>Medication information and side effects</li>
+            <li>Wellness tips and preventive care</li>
+            <li>First aid guidance</li>
+            <li>Mental health support</li>
+          </ul>
+          <p style="margin-top: 10px;"><em>Please note: I provide general information only. For serious medical concerns, always consult a healthcare professional.</em></p>
+        </div>
+      </div>
+      <div class="input-container">
+        <input 
+          class="chatInput" 
+          id="userInput" 
+          placeholder="Ask me about your health concerns..." 
+          maxlength="1000"
+          disabled
+        >
+        <button class="sendBtn" id="sendButton" onclick="sendMessage()" disabled>
+          Send
+        </button>
+      </div>
+    </div>
+
+    <div class="quick-questions">
+      <h3 style="text-align: center; margin-bottom: 20px; font-weight: 700;">💡 Quick Health Questions</h3>
+      <div class="questions-grid">
+        <div class="quick-question" onclick="askQuickQuestion('What are the common symptoms of flu?')">
+          🤧 What are common flu symptoms?
+        </div>
+        <div class="quick-question" onclick="askQuickQuestion('How can I boost my immune system naturally?')">
+          💪 How to boost immune system?
+        </div>
+        <div class="quick-question" onclick="askQuickQuestion('What foods should I eat for better heart health?')">
+          ❤️ Heart-healthy foods
+        </div>
+        <div class="quick-question" onclick="askQuickQuestion('How much water should I drink daily?')">
+          💧 Daily water intake
+        </div>
+        <div class="quick-question" onclick="askQuickQuestion('What are signs of high blood pressure?')">
+          🩺 High blood pressure signs
+        </div>
+        <div class="quick-question" onclick="askQuickQuestion('How to manage stress effectively?')">
+          😌 Stress management tips
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <h4 style="margin-bottom: 10px;">⚠️ Important Medical Disclaimer</h4>
+      <p>CureBot provides general health information for educational purposes only. This information is not intended to replace professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay seeking it because of something you read here. In case of emergency, call your local emergency services immediately.</p>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let isConnected = false;
+    let isLoading = false;
+
+    // Initialize the app when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('CureBot initialized');
+      testConnection();
+      
+      // Enable Enter key to send messages
+      document.getElementById('userInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    });
+
+    // Test connection to backend
+    async function testConnection() {
+      const statusIndicator = document.getElementById('connectionStatus');
+      const statusText = document.getElementById('statusText');
+      const userInput = document.getElementById('userInput');
+      const sendButton = document.getElementById('sendButton');
+      
+      statusIndicator.className = 'status-indicator status-loading';
+      statusText.textContent = 'Testing connection...';
+      
+      try {
+        const response = await fetch('/health');
+        const data = await response.json();
+        
+        if (response.ok && data.status === 'healthy') {
+          statusIndicator.className = 'status-indicator status-connected';
+          statusText.textContent = data.api_key_configured ? 
+            'Connected & Ready' : 'Connected (API key not configured)';
+          isConnected = data.api_key_configured;
+          
+          userInput.disabled = !isConnected;
+          sendButton.disabled = !isConnected;
+          
+          if (!isConnected) {
+            addMessageToChat('bot', 'Connection established, but API key is not configured. Please check your environment variables on Render.', 'error');
+          }
+        } else {
+          throw new Error('Health check failed');
+        }
+      } catch (error) {
+        console.error('Connection test failed:', error);
+        statusIndicator.className = 'status-indicator status-error';
+        statusText.textContent = 'Connection Failed';
+        isConnected = false;
+        userInput.disabled = true;
+        sendButton.disabled = true;
+        
+        addMessageToChat('bot', 'Unable to connect to the backend service. Please check if the server is running.', 'error');
+      }
+    }
+
+    // Send message to the backend
+    async function sendMessage() {
+      const userInput = document.getElementById('userInput');
+      const sendButton = document.getElementById('sendButton');
+      const message = userInput.value.trim();
+      
+      if (!message || isLoading || !isConnected) return;
+      
+      // Add user message to chat
+      addMessageToChat('user', message);
+      userInput.value = '';
+      
+      // Show loading state
+      isLoading = true;
+      sendButton.disabled = true;
+      sendButton.textContent = 'Sending...';
+      
+      const loadingId = addMessageToChat('bot', 'CureBot is thinking...', 'loading');
+      
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: message })
+        });
+        
+        // Remove loading message
+        removeMessage(loadingId);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('HTTP Error:', response.status, errorData);
+          addMessageToChat('bot', 
+            `Sorry, I encountered an error: ${errorData.error || 'Unknown error'}. Please try again.`, 
+            'error'
+          );
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          console.error('API Error:', data.error);
+          addMessageToChat('bot', `Sorry, there was an error: ${data.error}`, 'error');
+        } else if (data.response) {
+          addMessageToChat('bot', data.response);
+        } else {
+          console.error('Unexpected response format:', data);
+          addMessageToChat('bot', 'Sorry, I received an unexpected response. Please try again.', 'error');
+        }
+        
+      } catch (error) {
+        console.error('Fetch error:', error);
+        removeMessage(loadingId);
+        addMessageToChat('bot', `Sorry, I couldn't connect to the server: ${error.message}`, 'error');
+      } finally {
+        // Reset loading state
+        isLoading = false;
+        sendButton.disabled = false;
+        sendButton.textContent = 'Send';
+      }
+    }
+
+    // Add message to chat
+    function addMessageToChat(sender, message, type = 'normal') {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      const messageId = 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      
+      messageDiv.id = messageId;
+      messageDiv.className = `message ${sender}-message`;
+      
+      if (type === 'loading') {
+        messageDiv.classList.add('loading');
+      } else if (type === 'error') {
+        messageDiv.classList.add('error');
+      }
+      
+      messageDiv.innerHTML = `
+        <strong>${sender === 'user' ? 'You' : 'CureBot'}:</strong>
+        <p>${message}</p>
+      `;
+      
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      return messageId;
+    }
+
+    // Remove message by ID
+    function removeMessage(messageId) {
+      const message = document.getElementById(messageId);
+      if (message) {
+        message.remove();
+      }
+    }
+
+    // Clear chat messages
+    function clearChat() {
+      const chatMessages = document.getElementById('chatMessages');
+      // Keep only the welcome message (first message)
+      const messages = chatMessages.querySelectorAll('.message');
+      for (let i = 1; i < messages.length; i++) {
+        messages[i].remove();
+      }
+    }
+
+    // Handle quick questions
+    function askQuickQuestion(question) {
+      document.getElementById('userInput').value = question;
+      sendMessage();
+    }
+
+    // Handle connection errors gracefully
+    window.addEventListener('online', function() {
+      testConnection();
+    });
+
+    window.addEventListener('offline', function() {
+      const statusIndicator = document.getElementById('connectionStatus');
+      const statusText = document.getElementById('statusText');
+      statusIndicator.className = 'status-indicator status-error';
+      statusText.textContent = 'Offline';
+      isConnected = false;
+    });
+  </script>
+</body>
+</html>
