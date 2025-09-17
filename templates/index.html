@@ -840,7 +840,8 @@
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
       }
-      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; Secure; SameSite=Strict";
+      // Removed Secure flag for HTTP testing; re-add for HTTPS production
+      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Strict";
     }
 
     // Utility function to get a cookie
@@ -857,38 +858,65 @@
 
     // Save configuration to a cookie
     function saveConfig() {
-      const config = {
-        provider: currentProvider,
-        openrouter: {
-          key: document.getElementById('openrouterKey').value,
-          url: document.getElementById('openrouterUrl').value
-        },
-        ollama: {
-          url: document.getElementById('ollamaUrl').value
-        },
-        selectedModel: document.getElementById('modelSelect').value
-      };
-      setCookie('curebotConfig', JSON.stringify(config), 30); // Store for 30 days
-      addDebugLog('Configuration saved to cookie');
+      try {
+        const config = {
+          provider: currentProvider,
+          openrouter: {
+            key: document.getElementById('openrouterKey').value || '',
+            url: document.getElementById('openrouterUrl').value || 'https://openrouter.ai/api/v1/chat/completions'
+          },
+          ollama: {
+            url: document.getElementById('ollamaUrl').value || 'http://localhost:11434/api/chat'
+          },
+          selectedModel: document.getElementById('modelSelect').value || ''
+        };
+        const configString = JSON.stringify(config);
+        setCookie('curebotConfig', configString, 30); // Store for 30 days
+        // Verify cookie was set
+        const savedCookie = getCookie('curebotConfig');
+        if (savedCookie && savedCookie === configString) {
+          addDebugLog('Configuration saved successfully to cookie');
+        } else {
+          throw new Error('Failed to verify cookie storage');
+        }
+      } catch (error) {
+        addDebugLog(`Failed to save configuration: ${error.message}`);
+        alert('Error saving configuration: ' + error.message);
+      }
     }
 
     // Load configuration from a cookie
     function loadConfig() {
-      const saved = getCookie('curebotConfig');
-      if (saved) {
-        const config = JSON.parse(saved);
-        currentProvider = config.provider || 'openrouter';
-        document.getElementById('openrouterKey').value = config.openrouter?.key || '';
-        document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
-        document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
-        document.querySelectorAll('.provider-tab').forEach(tab => {
-          tab.classList.toggle('active', tab.dataset.provider === currentProvider);
-        });
-        document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
-        document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
-        addDebugLog('Configuration loaded from cookie');
-      } else {
-        addDebugLog('No configuration found in cookies');
+      try {
+        const saved = getCookie('curebotConfig');
+        if (saved) {
+          const config = JSON.parse(saved);
+          if (!config || typeof config !== 'object') {
+            throw new Error('Invalid configuration format');
+          }
+          currentProvider = config.provider || 'openrouter';
+          document.getElementById('openrouterKey').value = config.openrouter?.key || '';
+          document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
+          document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
+          document.querySelectorAll('.provider-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.provider === currentProvider);
+          });
+          document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
+          document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+          // Restore selected model if available
+          if (config.selectedModel) {
+            const modelSelect = document.getElementById('modelSelect');
+            const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
+            if (optionExists) {
+              modelSelect.value = config.selectedModel;
+            }
+          }
+          addDebugLog('Configuration loaded from cookie');
+        } else {
+          addDebugLog('No configuration found in cookies');
+        }
+      } catch (error) {
+        addDebugLog(`Failed to load configuration: ${error.message}`);
       }
     }
 
@@ -1233,3 +1261,4 @@
   </script>
 </body>
 </html>
+```
