@@ -14,31 +14,32 @@
     }
 
     :root {
-      --primary: #3B82F6; /* Soft blue */
-      --secondary: #6B7280; /* Neutral gray */
-      --accent: #EC4899; /* Vibrant pink */
-      --background: #F9FAFB; /* Light gray */
-      --text: #111827; /* Dark gray */
-      --error: #EF4444; /* Red */
-      --success: #22C55E; /* Green */
-      --border: #D1D5DB; /* Light gray border */
-      --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      --gradient: linear-gradient(135deg, #3B82F6, #EC4899);
-      --dark-background: #1F2937; /* Dark mode background */
-      --dark-text: #F9FAFB; /* Dark mode text */
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --background: #1F2937;
-        --text: #F9FAFB;
-        --border: #4B5563;
-      }
+      /* Modern Dark Theme Colors */
+      --primary: #6366f1; /* Indigo */
+      --primary-dark: #4f46e5;
+      --primary-light: #8b5cf6;
+      --secondary: #10b981; /* Emerald */
+      --accent: #f59e0b; /* Amber */
+      --background: #0f172a; /* Slate 900 */
+      --surface: #1e293b; /* Slate 800 */
+      --surface-light: #334155; /* Slate 700 */
+      --text: #f8fafc; /* Slate 50 */
+      --text-muted: #94a3b8; /* Slate 400 */
+      --error: #ef4444; /* Red 500 */
+      --success: #22c55e; /* Green 500 */
+      --warning: #f59e0b; /* Amber 500 */
+      --border: #475569; /* Slate 600 */
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #10b981);
+      --gradient-secondary: linear-gradient(135deg, #1e293b, #334155);
+      --glass: backdrop-filter: blur(10px) saturate(180%);
+      --glow: 0 0 20px rgba(99, 102, 241, 0.3);
     }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: var(--background);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
       min-height: 100vh;
       color: var(--text);
       display: flex;
@@ -46,6 +47,19 @@
       padding: 8px;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     .loading-spinner {
@@ -54,18 +68,19 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(15, 23, 42, 0.9);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 2000;
+      backdrop-filter: blur(10px);
     }
     .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
+      border: 4px solid rgba(99, 102, 241, 0.2);
       border-top: 4px solid var(--primary);
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       animation: spin 1s linear infinite;
     }
     @keyframes spin {
@@ -76,284 +91,386 @@
     .container {
       width: 100%;
       max-width: 900px;
-      background: var(--background);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
+      background: rgba(30, 41, 59, 0.8);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
       overflow: visible;
-      animation: fadeIn 0.1s ease-out forwards;
+      animation: fadeIn 0.6s ease-out forwards;
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     header {
       background: var(--gradient);
-      color: var(--dark-text);
-      padding: 10px;
+      color: var(--text);
+      padding: 20px;
       text-align: center;
+      border-radius: 20px 20px 0 0;
+      position: relative;
+      overflow: hidden;
     }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
     header h1 {
-      font-size: clamp(16px, 5vw, 20px);
+      font-size: clamp(18px, 5vw, 24px);
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 1;
     }
     header p {
       margin: 0;
       opacity: 0.9;
-      font-size: clamp(11px, 3vw, 12px);
+      font-size: clamp(12px, 3vw, 14px);
+      position: relative;
+      z-index: 1;
     }
 
     .config-section {
-      background: var(--dark-background);
-      padding: 8px;
-      color: var(--dark-text);
+      background: var(--surface);
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
     }
     .config-grid {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 8px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
     .config-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
     .config-group label {
       font-weight: 600;
-      font-size: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .config-group input, .config-group select {
-      padding: 8px;
-      border-radius: 6px;
+      padding: 12px 16px;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--dark-text);
-      font-size: 12px;
+      background: var(--surface-light);
+      color: var(--text);
+      font-size: 14px;
       width: 100%;
       min-height: 48px;
+      transition: all 0.3s ease;
+    }
+    .config-group input:focus, .config-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      transform: translateY(-1px);
     }
     .config-group input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-muted);
     }
+
     .provider-tabs {
       display: flex;
-      gap: 2px;
-      margin-bottom: 8px;
+      gap: 4px;
+      margin-bottom: 16px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--dark-background);
-      will-change: scroll-position;
+      scrollbar-color: var(--primary) transparent;
     }
     .provider-tabs::-webkit-scrollbar {
-      height: 6px;
+      height: 4px;
     }
     .provider-tabs::-webkit-scrollbar-track {
-      background: var(--dark-background);
+      background: transparent;
     }
     .provider-tabs::-webkit-scrollbar-thumb {
       background: var(--primary);
-      border-radius: 3px;
+      border-radius: 2px;
     }
     .provider-tab {
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
+      padding: 12px 20px;
+      background: var(--surface-light);
       border: 1px solid var(--border);
-      color: var(--dark-text);
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.1s ease;
+      transition: all 0.3s ease;
       white-space: nowrap;
       touch-action: manipulation;
-      font-size: 12px;
-      min-width: 80px;
-      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 12px;
       min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .provider-tab.active {
-      background: var(--primary);
-      border-bottom: 2px solid var(--accent);
-      color: var(--dark-text);
-    }
-    #llmStatus {
       background: var(--gradient);
-      padding: 8px;
-      color: var(--dark-text);
+      color: var(--text);
+      transform: translateY(-2px);
+      box-shadow: var(--glow);
+    }
+
+    #llmStatus {
+      background: var(--gradient-secondary);
+      padding: 16px;
+      color: var(--text);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
     }
     .status-info {
       display: flex;
-      gap: 6px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
     }
     .status-indicator {
-      width: 8px;
-      height: 8px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
+      position: relative;
+    }
+    .status-indicator::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: pulse 2s infinite;
     }
     .status-loading {
-      background: #F59E0B;
-      animation: pulse 1.5s infinite;
+      background: var(--warning);
+    }
+    .status-loading::before {
+      background: var(--warning);
     }
     .status-connected {
+      background: var(--success);
+    }
+    .status-connected::before {
       background: var(--success);
     }
     .status-disconnected {
       background: var(--error);
     }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
+    .status-disconnected::before {
+      background: var(--error);
     }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.5); opacity: 0.1; }
+      100% { transform: scale(1); opacity: 0.3; }
+    }
+
     .model-selector {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
     .model-selector label {
       font-weight: 600;
-      font-size: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .model-selector select {
-      padding: 8px 10px;
-      border-radius: 6px;
+      padding: 12px 16px;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--dark-text);
+      background: var(--surface-light);
+      color: var(--text);
       width: 100%;
-      font-size: 12px;
+      font-size: 14px;
       min-height: 48px;
+      transition: all 0.3s ease;
+    }
+    .model-selector select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
     .model-selector option {
-      background: var(--dark-background);
-      color: var(--dark-text);
-      font-size: 11px;
+      background: var(--surface);
+      color: var(--text);
     }
+
     .debug-info {
-      background: rgba(0, 0, 0, 0.1);
-      color: var(--dark-text);
-      padding: 8px;
-      border-radius: 6px;
-      font-family: monospace;
-      font-size: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-muted);
+      padding: 12px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      font-size: 11px;
       max-height: 120px;
       overflow-y: auto;
-      overflow-x: hidden;
       scrollbar-width: thin;
-      scrollbar-color: var(--primary) rgba(255, 255, 255, 0.1);
-      width: 100%;
+      scrollbar-color: var(--primary) transparent;
       display: none;
       word-break: break-all;
-      -webkit-overflow-scrolling: touch;
-      will-change: scroll-position;
-    }
-    .debug-info::-webkit-scrollbar {
-      width: 6px;
-    }
-    .debug-info::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-    }
-    .debug-info::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 3px;
-    }
-    .debug-toggle, .btn-small {
-      padding: 8px 12px;
-      border-radius: 6px;
-      background: var(--primary);
-      color: var(--dark-text);
       border: 1px solid var(--border);
-      cursor: pointer;
-      font-size: 12px;
-      touch-action: manipulation;
-      min-height: 48px;
     }
+
+    .debug-toggle, .btn-small {
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: var(--text);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      touch-action: manipulation;
+      min-height: 40px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .debug-toggle:hover, .btn-small:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
     .tabs {
       display: flex;
-      background: linear-gradient(135deg, #93C5FD, #FCA5A5);
+      background: var(--surface);
       gap: 2px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--background);
-      will-change: scroll-position;
+      scrollbar-color: var(--primary) transparent;
+      padding: 8px;
     }
     .tabs::-webkit-scrollbar {
-      height: 6px;
+      height: 4px;
     }
     .tabs::-webkit-scrollbar-track {
-      background: var(--background);
+      background: transparent;
     }
     .tabs::-webkit-scrollbar-thumb {
       background: var(--primary);
-      border-radius: 3px;
+      border-radius: 2px;
     }
     .tab {
-      padding: 8px 10px;
-      min-width: 80px;
+      padding: 12px 16px;
+      min-width: 120px;
       text-align: center;
       font-weight: 600;
       cursor: pointer;
-      border-right: 1px solid var(--border);
-      transition: all 0.1s ease;
-      font-size: 12px;
+      transition: all 0.3s ease;
+      font-size: 13px;
       white-space: nowrap;
       touch-action: manipulation;
-      color: var(--text);
-      min-height: 48px;
+      color: var(--text-muted);
+      background: var(--surface-light);
+      border-radius: 10px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
     }
     .tab.active {
-      background: var(--primary);
-      color: var(--dark-text);
+      background: var(--gradient);
+      color: var(--text);
       transform: translateY(-2px);
+      box-shadow: var(--glow);
+      border-color: rgba(99, 102, 241, 0.3);
     }
+
     .tab-content {
       display: none;
-      padding: 0;
       background: var(--background);
       overflow: visible;
     }
     .tab-content.active {
       display: block;
     }
+
     .chat-controls {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 8px;
-      background: linear-gradient(135deg, #E5E7EB, #D1D5DB);
+      gap: 12px;
+      padding: 16px;
+      background: var(--surface);
       align-items: stretch;
+      border-bottom: 1px solid var(--border);
     }
     .control-group {
       display: flex;
-      gap: 6px;
+      gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
     }
+
     .btn {
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 12px 20px;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
       background: var(--gradient);
-      color: var(--dark-text);
+      color: var(--text);
       font-weight: 600;
       touch-action: manipulation;
-      font-size: 12px;
+      font-size: 14px;
       min-height: 48px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    .btn:hover::before {
+      left: 100%;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
     }
     .btn-secondary {
-      background: linear-gradient(135deg, #FECACA, #FCA5A5);
-      color: var(--text);
+      background: linear-gradient(135deg, var(--surface-light), var(--surface));
+      border: 1px solid var(--border);
     }
+
     .export-dropdown {
       position: relative;
       display: inline-block;
@@ -364,34 +481,41 @@
       position: absolute;
       top: 100%;
       right: 0;
-      background: var(--background);
-      border-radius: 6px;
-      box-shadow: var(--shadow);
+      background: var(--surface);
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
       z-index: 1000;
-      min-width: 120px;
+      min-width: 180px;
       border: 1px solid var(--border);
+      overflow: hidden;
     }
     .export-menu.show {
       display: block;
+      animation: fadeIn 0.2s ease-out;
     }
     .export-option {
-      padding: 8px 10px;
+      padding: 12px 16px;
       cursor: pointer;
-      transition: background 0.1s;
+      transition: all 0.2s;
       border-bottom: 1px solid var(--border);
       font-weight: 600;
       color: var(--text);
       touch-action: manipulation;
-      font-size: 11px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .export-option:hover {
-      background: #E5E7EB;
+      background: var(--surface-light);
+      transform: translateX(4px);
     }
     .export-option:last-child {
       border-bottom: none;
     }
+
     .chat-section {
-      min-height: 250px;
+      min-height: 400px;
       display: flex;
       flex-direction: column;
       overflow: visible;
@@ -400,172 +524,349 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 8px;
+      padding: 20px;
       background: var(--background);
       scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--background);
+      scrollbar-color: var(--primary) transparent;
       -webkit-overflow-scrolling: touch;
-      will-change: scroll-position;
     }
     .chatBox::-webkit-scrollbar {
       width: 6px;
     }
     .chatBox::-webkit-scrollbar-track {
-      background: var(--background);
-      border-radius: 3px;
+      background: transparent;
     }
     .chatBox::-webkit-scrollbar-thumb {
       background: var(--primary);
       border-radius: 3px;
     }
+
     .message {
-      margin-bottom: 8px;
-      max-width: 95%;
-      animation: messageSlide 0.1s ease-out;
+      margin-bottom: 16px;
+      max-width: 85%;
+      animation: messageSlide 0.4s ease-out;
       word-wrap: break-word;
     }
     @keyframes messageSlide {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: none; }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .user-message {
       margin-left: auto;
       background: var(--gradient);
-      color: var(--dark-text);
-      padding: 8px 10px;
-      border-radius: 10px 10px 4px 10px;
-      font-size: 12px;
+      color: var(--text);
+      padding: 16px 20px;
+      border-radius: 20px 20px 8px 20px;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .user-message::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: -8px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-top: 8px solid var(--primary-light);
     }
     .bot-message {
       margin-right: auto;
-      background: var(--background);
-      padding: 8px 10px;
-      border-radius: 10px 10px 10px 4px;
-      border-left: 3px solid var(--primary);
+      background: var(--surface);
+      padding: 16px 20px;
+      border-radius: 20px 20px 20px 8px;
+      border: 1px solid var(--border);
       box-shadow: var(--shadow);
-      font-size: 12px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.6;
       color: var(--text);
+      position: relative;
     }
+    .bot-message::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--surface);
+    }
+
     .input-container {
       display: flex;
-      gap: 6px;
-      padding: 8px;
-      background: var(--background);
+      gap: 12px;
+      padding: 20px;
+      background: var(--surface);
       align-items: center;
+      border-top: 1px solid var(--border);
     }
     .chatInput {
       flex: 1;
-      padding: 8px 10px;
-      border-radius: 10px;
+      padding: 16px 20px;
+      border-radius: 25px;
       border: 1px solid var(--border);
-      font-size: 12px;
+      font-size: 14px;
       outline: none;
-      background: #F3F4F6;
+      background: var(--surface-light);
       color: var(--text);
       min-height: 48px;
+      transition: all 0.3s ease;
+      resize: none;
     }
     .chatInput:focus {
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
       border-color: var(--primary);
       background: var(--background);
+      transform: translateY(-1px);
+    }
+    .chatInput::placeholder {
+      color: var(--text-muted);
     }
     .sendBtn {
-      padding: 8px 12px;
-      border-radius: 10px;
+      padding: 16px 24px;
+      border-radius: 25px;
       font-weight: 600;
       border: none;
       cursor: pointer;
       background: var(--gradient);
-      color: var(--dark-text);
+      color: var(--text);
       touch-action: manipulation;
-      font-size: 12px;
+      font-size: 14px;
       min-height: 48px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
+    .sendBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow);
+    }
+    .sendBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    .sendBtn:hover::before {
+      left: 100%;
+    }
+
     .quick-questions {
-      padding: 8px;
-      background: linear-gradient(135deg, #93C5FD, #FCA5A5);
+      padding: 20px;
+      background: var(--surface);
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
     }
     .questions-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 6px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
     }
     .quick-question {
-      background: var(--background);
-      padding: 8px;
-      border-radius: 6px;
+      background: var(--surface-light);
+      padding: 16px;
+      border-radius: 12px;
       cursor: pointer;
       box-shadow: var(--shadow);
       font-weight: 600;
       text-align: center;
-      transition: transform 0.1s ease;
+      transition: all 0.3s ease;
       touch-action: manipulation;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text);
-      min-height: 48px;
+      min-height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .quick-question::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+      transition: left 0.5s;
+    }
+    .quick-question:hover::before {
+      left: 100%;
     }
     .quick-question:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary);
     }
     .quick-question[aria-disabled="true"] {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
+
     .disclaimer {
-      padding: 8px;
-      margin: 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      background: linear-gradient(135deg, #FEE2E2, #FECACA);
-      border-left: 3px solid var(--error);
+      padding: 16px 20px;
+      margin: 20px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+      border: 1px solid rgba(239, 68, 68, 0.3);
       color: var(--text);
+      backdrop-filter: blur(10px);
     }
+
     .thinking {
       opacity: 0.7;
       font-style: italic;
     }
     .error-message {
-      background: #FEE2E2;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
       color: var(--error);
-      padding: 8px 10px;
-      border-radius: 10px 10px 10px 4px;
-      border-left: 3px solid var(--error);
-      margin-bottom: 8px;
-      max-width: 95%;
-      font-size: 12px;
+      padding: 16px 20px;
+      border-radius: 20px 20px 20px 8px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      margin-bottom: 16px;
+      max-width: 85%;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
     }
+
+    /* Mobile Optimizations */
     @media (max-width: 768px) {
-      body { padding: 6px; }
-      .container { max-width: 100%; border-radius: 6px; }
-      header { padding: 8px; }
-      .config-section { padding: 6px; }
-      .chat-section { min-height: 200px; }
-      .chatBox { padding: 6px; }
-      .input-container { padding: 6px; gap: 4px; }
-      .quick-questions { padding: 6px; }
-      .questions-grid { gap: 4px; }
-      .tab { padding: 6px 8px; font-size: 11px; min-width: 70px; min-height: 40px; }
-      .model-selector select { font-size: 11px; min-height: 40px; }
-      #llmStatus { padding: 6px; }
-      .status-info { gap: 4px; }
-      .chat-controls { padding: 6px; }
-      .control-group { flex-direction: column; gap: 4px; }
-      .message { max-width: 98%; }
-      .btn, .sendBtn, .quick-question, .btn-small { min-height: 40px; font-size: 11px; }
-      .chatInput { min-height: 40px; font-size: 11px; }
+      body { padding: 4px; }
+      .container { 
+        max-width: 100%; 
+        border-radius: 16px; 
+        margin: 0;
+      }
+      header { 
+        padding: 16px; 
+        border-radius: 16px 16px 0 0;
+      }
+      .config-section { padding: 12px; }
+      .chat-section { min-height: 300px; }
+      .chatBox { padding: 16px; }
+      .input-container { padding: 12px; gap: 8px; }
+      .quick-questions { padding: 12px; }
+      .questions-grid { 
+        grid-template-columns: 1fr;
+        gap: 8px; 
+      }
+      .tab { 
+        padding: 10px 12px; 
+        font-size: 12px; 
+        min-width: 90px; 
+        min-height: 40px; 
+      }
+      .tabs { padding: 4px; }
+      .model-selector select { font-size: 13px; min-height: 44px; }
+      #llmStatus { padding: 12px; }
+      .status-info { gap: 8px; }
+      .chat-controls { padding: 12px; }
+      .control-group { flex-direction: column; gap: 8px; }
+      .message { max-width: 90%; }
+      .btn, .sendBtn, .quick-question, .btn-small { 
+        min-height: 44px; 
+        font-size: 13px; 
+      }
+      .chatInput { 
+        min-height: 44px; 
+        font-size: 13px; 
+        padding: 12px 16px;
+      }
+      .user-message, .bot-message {
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+      .quick-question {
+        min-height: 50px;
+        padding: 12px;
+        font-size: 12px;
+      }
     }
+
     @media (max-width: 480px) {
-      .chat-section { min-height: 150px; }
-      .quick-question { padding: 6px; font-size: 10px; min-height: 36px; }
-      .btn, .sendBtn { padding: 6px 10px; font-size: 10px; min-height: 36px; }
-      .chatInput { padding: 6px; font-size: 10px; min-height: 36px; }
-      header h1 { font-size: 14px; }
-      header p { font-size: 10px; }
-      .config-group input, .config-group select { font-size: 11px; min-height: 36px; }
+      .chat-section { min-height: 250px; }
+      .quick-question { 
+        padding: 10px; 
+        font-size: 11px; 
+        min-height: 44px; 
+      }
+      .btn, .sendBtn { 
+        padding: 10px 16px; 
+        font-size: 12px; 
+        min-height: 40px; 
+      }
+      .chatInput { 
+        padding: 10px 14px; 
+        font-size: 12px; 
+        min-height: 40px; 
+      }
+      header h1 { font-size: 16px; }
+      header p { font-size: 11px; }
+      .config-group input, .config-group select { 
+        font-size: 12px; 
+        min-height: 40px; 
+        padding: 10px 12px;
+      }
+      .user-message, .bot-message {
+        padding: 10px 14px;
+        font-size: 12px;
+      }
+      .container {
+        border-radius: 12px;
+      }
+      header {
+        border-radius: 12px 12px 0 0;
+      }
+    }
+
+    /* Enhanced animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .provider-tab:hover {
+      animation: float 2s ease-in-out infinite;
+    }
+
+    .tab:hover {
+      animation: float 2s ease-in-out infinite;
+    }
+
+    /* Improved focus states for accessibility */
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    .tab:focus-visible,
+    .quick-question:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    /* Auto-save indicator */
+    .config-section::after {
+      content: 'Auto-saves configuration ✓';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      color: var(--success);
+      opacity: 0.7;
+      font-weight: 500;
+    }
+
+    .config-section {
+      position: relative;
     }
   </style>
 </head>
@@ -584,7 +885,7 @@
         <div class="provider-tab" data-provider="ollama">Ollama</div>
       </div>
       <div id="openrouter-config" class="provider-config">
-        <div class="config-grid">
+                  <div class="config-grid">
           <div class="config-group">
             <label for="openrouterKey">OpenRouter API Key</label>
             <input type="password" id="openrouterKey" placeholder="sk-or-v1-...">
@@ -669,7 +970,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Quick Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Quick Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about common cold symptoms">What are common cold symptoms?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to boost immune system naturally">How to boost immune system naturally?</div>
@@ -702,7 +1003,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Diabetes Care Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Diabetes Care Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask what foods diabetics should avoid">What foods should diabetics avoid?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to monitor blood sugar properly">How to monitor blood sugar properly?</div>
@@ -735,7 +1036,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Heart Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Heart Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about normal blood pressure range">What is normal blood pressure range?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to control cholesterol naturally">How to control cholesterol naturally?</div>
@@ -768,7 +1069,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Mental Wellness Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Mental Wellness Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to manage stress effectively">How to manage stress effectively?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about tips for better sleep hygiene">Tips for better sleep hygiene</div>
@@ -801,7 +1102,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Respiratory Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Respiratory Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to improve lung capacity naturally">How to improve lung capacity naturally?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about signs of asthma">What are signs of asthma?</div>
@@ -834,7 +1135,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Women's Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Women's Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about common signs of hormonal imbalance">What are common signs of hormonal imbalance?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to maintain reproductive health">How to maintain reproductive health?</div>
@@ -867,7 +1168,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Elderly Care Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Elderly Care Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask how to prevent falls in elderly">How to prevent falls in elderly?</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about managing multiple medications safely">Managing multiple medications safely</div>
@@ -900,7 +1201,7 @@
         </div>
       </div>
       <div class="quick-questions">
-        <h3 style="text-align: center; margin-bottom: 8px; font-size: 12px;">Pediatric Health Questions</h3>
+        <h3 style="text-align: center; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Pediatric Health Questions</h3>
         <div class="questions-grid">
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about vaccination schedule for children">Vaccination schedule for children</div>
           <div class="quick-question" role="button" tabindex="0" aria-label="Ask about managing childhood obesity">Managing childhood obesity</div>
@@ -946,80 +1247,179 @@
       }
     }
 
-    function setCookie(name, value, days) {
-      let expires = "";
-      if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=Lax`;
-      localStorage.setItem(name, value); // Fallback for mobile browsers
-      addDebugLog(`Cookie and localStorage set: ${name}`);
-    }
-
-    function getCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let c of ca) {
-        c = c.trim();
-        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length));
-      }
-      // Fallback to localStorage
-      const localValue = localStorage.getItem(name);
-      if (localValue) {
-        addDebugLog(`Cookie not found, using localStorage for ${name}`);
-        return localValue;
-      }
-      return null;
-    }
-
-    function saveConfig() {
+    // Enhanced storage with multiple fallbacks and auto-save
+    function setStorageItem(name, value, days = 90) {
+      const data = {
+        value: value,
+        timestamp: Date.now(),
+        expires: Date.now() + (days * 24 * 60 * 60 * 1000)
+      };
+      const serializedData = JSON.stringify(data);
+      
+      // Try multiple storage methods
       try {
-        const openrouterKeyElement = document.getElementById('openrouterKey');
-        if (!openrouterKeyElement) {
-          throw new Error('OpenRouter API key input not found');
+        // Primary: localStorage
+        if (typeof Storage !== "undefined") {
+          localStorage.setItem(name, serializedData);
+          addDebugLog(`Saved to localStorage: ${name}`);
         }
-        const openrouterKey = openrouterKeyElement.value.trim();
-        if (!openrouterKey) {
-          addDebugLog('Warning: OpenRouter API key is empty');
-          alert('Please enter an OpenRouter API key. Get one at https://openrouter.ai/keys');
-          return;
+        
+        // Secondary: sessionStorage
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.setItem(name + '_session', serializedData);
+          addDebugLog(`Saved to sessionStorage: ${name}`);
         }
+        
+        // Tertiary: cookies (with longer expiration)
+        if (days && typeof document !== "undefined") {
+          const expires = new Date();
+          expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+          document.cookie = `${name}=${encodeURIComponent(serializedData)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax; Secure`;
+          addDebugLog(`Saved to cookies: ${name}`);
+        }
+        
+        return true;
+      } catch (error) {
+        addDebugLog(`Storage error: ${error.message}`);
+        return false;
+      }
+    }
+
+    function getStorageItem(name) {
+      try {
+        let data = null;
+        
+        // Try localStorage first
+        if (typeof Storage !== "undefined") {
+          const stored = localStorage.getItem(name);
+          if (stored) {
+            data = JSON.parse(stored);
+            addDebugLog(`Retrieved from localStorage: ${name}`);
+          }
+        }
+        
+        // Fallback to sessionStorage
+        if (!data && typeof sessionStorage !== "undefined") {
+          const stored = sessionStorage.getItem(name + '_session');
+          if (stored) {
+            data = JSON.parse(stored);
+            addDebugLog(`Retrieved from sessionStorage: ${name}`);
+          }
+        }
+        
+        // Fallback to cookies
+        if (!data && typeof document !== "undefined") {
+          const nameEQ = name + "=";
+          const ca = document.cookie.split(';');
+          for (let c of ca) {
+            c = c.trim();
+            if (c.indexOf(nameEQ) === 0) {
+              const cookieData = decodeURIComponent(c.substring(nameEQ.length));
+              data = JSON.parse(cookieData);
+              addDebugLog(`Retrieved from cookies: ${name}`);
+              break;
+            }
+          }
+        }
+        
+        // Check if data has expired
+        if (data && data.expires && Date.now() > data.expires) {
+          addDebugLog(`Data expired for: ${name}`);
+          return null;
+        }
+        
+        return data ? data.value : null;
+      } catch (error) {
+        addDebugLog(`Storage retrieval error: ${error.message}`);
+        return null;
+      }
+    }
+
+    // Auto-save configuration on any input change
+    function autoSaveConfig() {
+      try {
+        const openrouterKey = document.getElementById('openrouterKey')?.value?.trim();
+        if (!openrouterKey) return; // Don't save empty config
+        
         const config = {
           provider: currentProvider,
           openrouter: {
             key: openrouterKey,
-            url: document.getElementById('openrouterUrl').value.trim() || 'https://openrouter.ai/api/v1/chat/completions'
+            url: document.getElementById('openrouterUrl')?.value?.trim() || 'https://openrouter.ai/api/v1/chat/completions'
           },
           ollama: {
-            url: document.getElementById('ollamaUrl').value.trim() || 'http://localhost:11434/api/chat'
+            url: document.getElementById('ollamaUrl')?.value?.trim() || 'http://localhost:11434/api/chat'
           },
-          selectedModel: document.getElementById('modelSelect').value || ''
+          selectedModel: document.getElementById('modelSelect')?.value || '',
+          lastSaved: Date.now()
         };
-        setCookie('curebotConfig', JSON.stringify(config), 90);
-        addDebugLog(`Configuration saved: API key (${openrouterKey.slice(0, 4)}...)`);
-        alert('Configuration saved successfully! Reload the page to verify.');
+        
+        const saved = setStorageItem('curebotConfig', config, 90);
+        if (saved) {
+          addDebugLog(`Auto-saved configuration: API key (${openrouterKey.slice(0, 4)}...)`);
+          // Visual feedback
+          showAutoSaveIndicator();
+        }
       } catch (error) {
-        addDebugLog(`Failed to save configuration: ${error.message}`);
-        alert(`Error saving configuration: ${error.message}. Check Debug Info for details.`);
+        addDebugLog(`Auto-save failed: ${error.message}`);
       }
+    }
+
+    function showAutoSaveIndicator() {
+      // Create or update auto-save indicator
+      let indicator = document.getElementById('autoSaveIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'autoSaveIndicator';
+        indicator.style.cssText = `
+          position: fixed; 
+          top: 20px; 
+          right: 20px; 
+          background: var(--success); 
+          color: white; 
+          padding: 8px 12px; 
+          border-radius: 20px; 
+          font-size: 12px; 
+          z-index: 1000; 
+          opacity: 0; 
+          transition: opacity 0.3s ease;
+          pointer-events: none;
+        `;
+        document.body.appendChild(indicator);
+      }
+      
+      indicator.textContent = '✓ Auto-saved';
+      indicator.style.opacity = '1';
+      
+      setTimeout(() => {
+        indicator.style.opacity = '0';
+      }, 2000);
+    }
+
+    function saveConfig() {
+      autoSaveConfig();
+      alert('Configuration saved successfully!');
     }
 
     function loadConfig() {
       try {
-        const saved = getCookie('curebotConfig');
+        const saved = getStorageItem('curebotConfig');
         if (!saved) {
-          addDebugLog('No configuration found in cookies or localStorage');
+          addDebugLog('No configuration found in storage');
           updateConnectionStatus('disconnected', 'No Config Found', 'Please enter and save API settings');
-          alert('No saved API key found. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Enable Debug Info to troubleshoot.');
           return;
         }
-        const config = JSON.parse(saved);
+        
+        const config = saved;
         if (!config || typeof config !== 'object') {
           throw new Error('Invalid configuration format');
         }
+        
         currentProvider = config.provider || 'openrouter';
+        
+        // Set up input change listeners before loading values
+        setupAutoSaveListeners();
+        
         let retries = 0;
         const maxRetries = 15;
         const setInputs = () => {
@@ -1030,17 +1430,23 @@
             setTimeout(setInputs, 200);
             return;
           }
+          
           if (!openrouterKeyElement) {
             throw new Error('OpenRouter key input not found after retries');
           }
+          
+          // Load configuration values
           openrouterKeyElement.value = config.openrouter?.key || '';
           document.getElementById('openrouterUrl').value = config.openrouter?.url || 'https://openrouter.ai/api/v1/chat/completions';
           document.getElementById('ollamaUrl').value = config.ollama?.url || 'http://localhost:11434/api/chat';
+          
+          // Update UI
           document.querySelectorAll('.provider-tab').forEach(tab => {
             tab.classList.toggle('active', tab.dataset.provider === currentProvider);
           });
           document.getElementById('openrouter-config').style.display = currentProvider === 'openrouter' ? 'block' : 'none';
           document.getElementById('ollama-config').style.display = currentProvider === 'ollama' ? 'block' : 'none';
+          
           if (config.selectedModel) {
             const modelSelect = document.getElementById('modelSelect');
             const optionExists = Array.from(modelSelect.options).some(opt => opt.value === config.selectedModel);
@@ -1048,20 +1454,49 @@
               modelSelect.value = config.selectedModel;
             }
           }
+          
           addDebugLog(`Configuration loaded: API key (${config.openrouter?.key ? config.openrouter.key.slice(0, 4) + '...' : 'none'})`);
           if (config.openrouter?.key) {
-            updateConnectionStatus('connected', 'Configuration Loaded', 'API key retrieved');
+            updateConnectionStatus('connected', 'Configuration Loaded', 'API key retrieved from storage');
           } else {
             updateConnectionStatus('disconnected', 'No API Key', 'Please enter and save an API key');
-            alert('No saved API key found. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Enable Debug Info to troubleshoot.');
           }
         };
         setInputs();
       } catch (error) {
         addDebugLog(`Failed to load configuration: ${error.message}`);
         updateConnectionStatus('disconnected', 'Config Load Failed', error.message);
-        alert(`Failed to load API key: ${error.message}. Please enter and save your OpenRouter API key at https://openrouter.ai/keys. Check Debug Info for details.`);
       }
+    }
+
+    function setupAutoSaveListeners() {
+      // Add input listeners for auto-save
+      const inputs = ['openrouterKey', 'openrouterUrl', 'ollamaUrl'];
+      inputs.forEach(inputId => {
+        const element = document.getElementById(inputId);
+        if (element) {
+          element.addEventListener('input', debounce(autoSaveConfig, 1000));
+          element.addEventListener('change', autoSaveConfig);
+        }
+      });
+      
+      const modelSelect = document.getElementById('modelSelect');
+      if (modelSelect) {
+        modelSelect.addEventListener('change', autoSaveConfig);
+      }
+    }
+
+    // Debounce function to limit auto-save frequency
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
     }
 
     async function testOllamaConnection() {
@@ -1081,7 +1516,7 @@
         clearTimeout(timeoutId);
         if (response.ok) {
           statusElement.textContent = 'Connected ✓';
-          statusElement.style.color = '#22c55e';
+          statusElement.style.color = 'var(--success)';
           addDebugLog('Ollama connection successful');
           updateConnectionStatus('connected', 'Ollama Connected', 'Ready to chat');
           return true;
@@ -1091,7 +1526,7 @@
       } catch (error) {
         clearTimeout(timeoutId);
         statusElement.textContent = 'Connection failed ✗';
-        statusElement.style.color = '#ef4444';
+        statusElement.style.color = 'var(--error)';
         let errorMessage = error.message;
         if (error.name === 'AbortError') {
           errorMessage = 'Connection timed out after 5 seconds';
@@ -1107,9 +1542,10 @@
     async function loadModels() {
       const modelSelect = document.getElementById('modelSelect');
       const cacheKey = `${currentProvider}_models`;
-      const cached = localStorage.getItem(cacheKey);
+      const cached = getStorageItem(cacheKey);
+      
       if (cached) {
-        const { models, timestamp } = JSON.parse(cached);
+        const { models, timestamp } = cached;
         if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
           modelSelect.innerHTML = '<option value="">Select a model</option>';
           models.forEach(model => {
@@ -1123,10 +1559,12 @@
           return;
         }
       }
+      
       modelSelect.innerHTML = '<option value="">Loading models...</option>';
       try {
         updateConnectionStatus('loading', 'Loading Models', 'Please wait...');
         let models = [];
+        
         if (currentProvider === 'openrouter') {
           const apiKey = document.getElementById('openrouterKey').value;
           if (!apiKey) {
@@ -1142,7 +1580,10 @@
             throw new Error(`Failed to fetch models: ${response.status}`);
           }
           const data = await response.json();
-          models = data.data.map(model => ({ id: model.id, name: `${model.id} - ${model.pricing?.prompt || '0'}/1K tokens` }));
+          models = data.data.map(model => ({ 
+            id: model.id, 
+            name: `${model.id} - ${model.pricing?.prompt || '0'}/1K tokens` 
+          }));
         } else if (currentProvider === 'ollama') {
           const url = document.getElementById('ollamaUrl').value;
           const modelsUrl = url.replace('/api/chat', '/api/tags');
@@ -1156,7 +1597,9 @@
             name: `${model.name} (${Math.round(model.size / 1024 / 1024 / 1024 * 100) / 100}GB)`
           })) || [];
         }
-        localStorage.setItem(cacheKey, JSON.stringify({ models, timestamp: Date.now() }));
+        
+        setStorageItem(cacheKey, { models, timestamp: Date.now() }, 1);
+        
         modelSelect.innerHTML = '<option value="">Select a model</option>';
         models.forEach(model => {
           const option = document.createElement('option');
@@ -1164,8 +1607,12 @@
           option.textContent = model.name;
           modelSelect.appendChild(option);
         });
+        
         updateConnectionStatus('connected', `${currentProvider} Connected`, `${models.length} models loaded`);
         addDebugLog(`Loaded ${models.length} ${currentProvider} models`);
+        
+        // Auto-save the updated model list
+        autoSaveConfig();
       } catch (error) {
         modelSelect.innerHTML = '<option value="">Failed to load models</option>';
         updateConnectionStatus('disconnected', 'Connection Failed', error.message);
@@ -1182,28 +1629,35 @@
     async function sendMessage(tabName, message) {
       message = sanitizeInput(message.trim());
       if (!message) return;
+      
       const chatBox = document.getElementById(`${tabName}ChatBox`);
       const input = document.getElementById(`${tabName}Input`);
+      
       if (isStreaming) {
         addDebugLog('Already processing a message, please wait...');
         return;
       }
+      
       const selectedModel = document.getElementById('modelSelect').value;
       if (!selectedModel) {
         addMessage(tabName, 'Please select a model first.', 'error');
         return;
       }
+      
       addMessage(tabName, message, 'user');
       input.value = '';
       conversationHistories[tabName].push({ role: 'user', content: message });
+      
       const thinkingDiv = document.createElement('div');
       thinkingDiv.className = 'message bot-message thinking';
       thinkingDiv.innerHTML = 'Thinking...';
       chatBox.appendChild(thinkingDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
+      
       isStreaming = true;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       try {
         let response;
         if (currentProvider === 'openrouter') {
@@ -1216,6 +1670,7 @@
             },
             ...conversationHistories[tabName]
           ];
+          
           response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
@@ -1251,13 +1706,17 @@
             signal: controller.signal
           });
         }
+        
         clearTimeout(timeoutId);
         chatBox.removeChild(thinkingDiv);
+        
         if (!response.ok) {
           throw new Error(`API request failed: ${response.status} ${response.statusText}`);
         }
+        
         const data = await response.json();
         let botResponse = '';
+        
         if (currentProvider === 'openrouter') {
           if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
             throw new Error('Invalid response format from OpenRouter API');
@@ -1269,6 +1728,7 @@
           }
           botResponse = data.message.content;
         }
+        
         addMessage(tabName, botResponse, 'bot');
         conversationHistories[tabName].push({ role: 'assistant', content: botResponse });
         addDebugLog(`Message sent successfully via ${currentProvider}`);
@@ -1321,11 +1781,13 @@
         alert('No chat history to export');
         return;
       }
+      
       let content = `CureBot ${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Health Chat Export\n`;
       content += `Generated on: ${new Date().toLocaleString()}\n\n`;
       history.forEach((msg, index) => {
         content += `${msg.role.toUpperCase()}: ${msg.content}\n\n`;
       });
+      
       if (format === 'txt') {
         const blob = new Blob([content], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
@@ -1358,9 +1820,10 @@
         if (loadingSpinner) {
           loadingSpinner.style.display = 'none';
         }
-      }, 500);
+      }, 800);
 
       loadConfig();
+
       document.querySelectorAll('.provider-tab').forEach(tab => {
         tab.addEventListener('click', function() {
           currentProvider = this.dataset.provider;
@@ -1374,12 +1837,14 @@
             modelSelect.innerHTML = '<option value="">Configure provider first</option>';
           }
           addDebugLog(`Switched to provider: ${currentProvider}`);
+          autoSaveConfig();
         });
         tab.addEventListener('touchstart', function(e) {
           e.preventDefault();
           this.click();
         });
       });
+
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
           const targetTab = this.dataset.tab;
@@ -1397,6 +1862,7 @@
           this.click();
         });
       });
+
       const testOllamaBtn = document.getElementById('testOllamaBtn');
       if (testOllamaBtn) {
         testOllamaBtn.addEventListener('click', testOllamaConnection);
@@ -1405,6 +1871,7 @@
           testOllamaConnection();
         });
       }
+
       const loadModelsBtn = document.getElementById('loadModelsBtn');
       if (loadModelsBtn) {
         loadModelsBtn.addEventListener('click', loadModels);
@@ -1413,6 +1880,7 @@
           loadModels();
         });
       }
+
       const saveConfigBtn = document.getElementById('saveConfigBtn');
       if (saveConfigBtn) {
         saveConfigBtn.addEventListener('click', saveConfig);
@@ -1421,6 +1889,7 @@
           saveConfig();
         });
       }
+
       const refreshModelsBtn = document.getElementById('refreshModelsBtn');
       if (refreshModelsBtn) {
         refreshModelsBtn.addEventListener('click', loadModels);
@@ -1429,6 +1898,7 @@
           loadModels();
         });
       }
+
       const debugToggleBtn = document.getElementById('debugToggleBtn');
       if (debugToggleBtn) {
         debugToggleBtn.addEventListener('click', function() {
@@ -1443,10 +1913,12 @@
           this.click();
         });
       }
+
       tabs.forEach(tab => {
         const input = document.getElementById(`${tab}Input`);
         const sendBtn = document.getElementById(`${tab}Send`);
         const clearBtn = document.getElementById(`clearChatBtn${tab.charAt(0).toUpperCase()}`);
+
         if (sendBtn && input) {
           sendBtn.addEventListener('click', () => sendMessage(tab, input.value));
           sendBtn.addEventListener('touchstart', function(e) {
@@ -1460,6 +1932,7 @@
             }
           });
         }
+
         if (clearBtn) {
           clearBtn.addEventListener('click', () => clearChat(tab));
           clearBtn.addEventListener('touchstart', function(e) {
@@ -1467,6 +1940,7 @@
             clearChat(tab);
           });
         }
+
         const quickQuestions = document.querySelectorAll(`#${tab} .quick-question`);
         quickQuestions.forEach(question => {
           const handleQuickQuestion = function(e) {
@@ -1491,6 +1965,7 @@
             }
           });
         });
+
         const exportBtn = document.getElementById(`exportBtn${tab.charAt(0).toUpperCase()}`);
         const exportMenu = document.getElementById(`exportMenu${tab.charAt(0).toUpperCase()}`);
         if (exportBtn && exportMenu) {
@@ -1519,11 +1994,13 @@
           });
         }
       });
+
       document.addEventListener('click', function() {
         document.querySelectorAll('.export-menu').forEach(menu => {
           menu.classList.remove('show');
         });
       });
+
       document.addEventListener('touchstart', function(e) {
         if (!e.target.closest('.export-dropdown')) {
           document.querySelectorAll('.export-menu').forEach(menu => {
@@ -1531,7 +2008,13 @@
           });
         }
       });
-      addDebugLog('CureBot initialized successfully');
+
+      // Set up auto-save listeners after DOM is ready
+      setTimeout(() => {
+        setupAutoSaveListeners();
+      }, 1000);
+
+      addDebugLog('CureBot initialized successfully with enhanced storage and auto-save');
     });
   </script>
 </body>
